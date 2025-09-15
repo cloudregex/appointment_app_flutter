@@ -21,8 +21,14 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             onPressed: () async {
               // Logout functionality
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.remove('token');
+              try {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.remove('token');
+              } catch (e) {
+                // If there's an error removing the token, we'll still navigate to login
+                print('Error removing token: $e');
+              }
+              if (!mounted) return;
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const LoginPage()),

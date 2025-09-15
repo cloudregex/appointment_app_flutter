@@ -19,19 +19,29 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkLoginStatus() async {
-    // Always wait for 3 seconds for splash screen visibility
-    await Future.delayed(const Duration(seconds: 3));
+    bool isLoggedIn = false;
 
-    // Check if the widget is still mounted before proceeding
-    if (!mounted) return;
+    try {
+      // Always wait for 3 seconds for splash screen visibility
+      await Future.delayed(const Duration(seconds: 3));
 
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+      // Check if the widget is still mounted before proceeding
+      if (!mounted) return;
+
+      // Try to check login status using shared_preferences
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      isLoggedIn = token != null;
+    } catch (e) {
+      // If there's an error with shared_preferences, default to not logged in
+      isLoggedIn = false;
+    }
 
     // Check again if the widget is still mounted after async operations
     if (!mounted) return;
 
-    if (token != null) {
+    // Navigate to appropriate screen
+    if (isLoggedIn) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),

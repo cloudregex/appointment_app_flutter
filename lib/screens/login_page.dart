@@ -41,8 +41,16 @@ class _LoginPageState extends State<LoginPage> {
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           // Handle successful login
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', data['token']);
+          print(data);
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('token', data['token']);
+          } catch (e) {
+            print('Error saving token: $e');
+          }
+
+          if (!mounted) return;
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomePage()),
