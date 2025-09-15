@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../helper/api_helper.dart';
+import '../helper/token_manager.dart';
 import './login_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -21,13 +22,8 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             onPressed: () async {
               // Logout functionality
-              try {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.remove('token');
-              } catch (e) {
-                // If there's an error removing the token, we'll still navigate to login
-                print('Error removing token: $e');
-              }
+              await TokenManager.clearToken();
+              ApiHelper.authToken = null;
               if (!mounted) return;
               Navigator.pushReplacement(
                 context,

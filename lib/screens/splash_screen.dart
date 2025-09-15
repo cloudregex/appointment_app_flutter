@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../helper/api_helper.dart';
+import '../helper/token_manager.dart';
 import './login_page.dart';
 import './home_page.dart';
 
@@ -19,29 +20,14 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkLoginStatus() async {
-    bool isLoggedIn = false;
+    await Future.delayed(const Duration(seconds: 3));
 
-    try {
-      // Always wait for 3 seconds for splash screen visibility
-      await Future.delayed(const Duration(seconds: 3));
-
-      // Check if the widget is still mounted before proceeding
-      if (!mounted) return;
-
-      // Try to check login status using shared_preferences
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-      isLoggedIn = token != null;
-    } catch (e) {
-      // If there's an error with shared_preferences, default to not logged in
-      isLoggedIn = false;
-    }
-
-    // Check again if the widget is still mounted after async operations
     if (!mounted) return;
 
-    // Navigate to appropriate screen
-    if (isLoggedIn) {
+    final token = await TokenManager.getToken();
+
+    if (token != null) {
+      ApiHelper.authToken = token;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),

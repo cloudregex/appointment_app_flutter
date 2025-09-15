@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import '../helper/api_helper.dart';
+import '../helper/token_manager.dart';
 import './home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -26,43 +25,31 @@ class _LoginPageState extends State<LoginPage> {
         _errorMessage = '';
       });
       try {
-        final response = await http.post(
-          Uri.parse('https://appoiment.cloudregex.com/api/tenant/login'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
+        final data = await ApiHelper.request(
+          'tenant/login',
+          method: 'POST',
+          body: {
             'db_host': '127.0.0.1',
             'db_port': '3306',
             'db_name': _dbNameController.text,
             'db_username': _dbUsernameController.text,
             'db_password': _dbPasswordController.text,
-          }),
+          },
         );
 
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          // Handle successful login
-          print(data);
-          try {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('token', data['token']);
-          } catch (e) {
-            print('Error saving token: $e');
-          }
+        final token = data['token'];
+        await TokenManager.saveToken(token);
+        ApiHelper.authToken = token;
 
-          if (!mounted) return;
+        if (!mounted) return;
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-          );
-        } else {
-          setState(() {
-            _errorMessage = 'Invalid credentials. Please try again.';
-          });
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       } catch (e) {
         setState(() {
-          _errorMessage = 'An error occurred. Please try again.';
+          _errorMessage = e.toString();
         });
       } finally {
         setState(() {
