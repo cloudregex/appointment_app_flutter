@@ -19,22 +19,29 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkLoginStatus() async {
+    // Always wait for 3 seconds for splash screen visibility
+    await Future.delayed(const Duration(seconds: 3));
+
+    // Check if the widget is still mounted before proceeding
+    if (!mounted) return;
+
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
-    Timer(const Duration(seconds: 3), () {
-      if (token != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-        );
-      }
-    });
+    // Check again if the widget is still mounted after async operations
+    if (!mounted) return;
+
+    if (token != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
   }
 
   @override
@@ -45,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
           gradient: LinearGradient(
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
-            colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
+            colors: [Colors.deepPurple, Colors.blue],
           ),
         ),
         child: Center(
