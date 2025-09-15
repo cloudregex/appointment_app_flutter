@@ -12,9 +12,9 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _dbNameController = TextEditingController();
-  final _dbUsernameController = TextEditingController();
-  final _dbPasswordController = TextEditingController();
+  final _dbNameController = TextEditingController(text: 'appointmentapp');
+  final _dbUsernameController = TextEditingController(text: 'appointmentapp');
+  final _dbPasswordController = TextEditingController(text: 'appointmentapp');
   bool _isLoading = false;
   String _errorMessage = '';
 

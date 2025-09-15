@@ -15,9 +15,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Appointment App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF3A8DFF)),
         useMaterial3: true,
       ),
+
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );

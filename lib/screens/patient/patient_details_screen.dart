@@ -26,7 +26,7 @@ class PatientDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(patient['Pname'] ?? 'Patient Details'),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         actions: [
           IconButton(

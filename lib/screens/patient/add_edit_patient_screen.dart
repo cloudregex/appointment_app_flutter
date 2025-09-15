@@ -279,7 +279,7 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      backgroundColor: Theme.of(context).primaryColor,
+                      backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
                     ),
                     child: Text(

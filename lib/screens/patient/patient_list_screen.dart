@@ -132,7 +132,7 @@ class _PatientListScreenState extends State<PatientListScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToAddEditScreen(),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
