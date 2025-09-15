@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../helper/api_helper.dart';
 import '../helper/token_manager.dart';
 import './login_page.dart';
+import './patient/patient_list_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -103,6 +104,15 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PatientListScreen()),
+          );
+        },
+        child: const Icon(Icons.people),
       ),
     );
   }
