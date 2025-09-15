@@ -102,11 +102,15 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
             body: patientData,
           );
         }
-        Navigator.pop(context);
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
       } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to save patient: $e')));
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to save patient: $e')));
+        }
       }
     }
   }
@@ -116,6 +120,8 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.patient == null ? 'Add Patient' : 'Edit Patient'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -124,77 +130,214 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                TextFormField(
+                // Header card
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            widget.patient == null
+                                ? Icons.person_add
+                                : Icons.person,
+                            color: Theme.of(context).primaryColor,
+                            size: 32,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.patient == null
+                                    ? 'Add New Patient'
+                                    : 'Edit Patient',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Fill in the patient details below',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Form fields
+                _buildSectionTitle('Personal Information'),
+                _buildTextField(
                   controller: _regNoController,
-                  decoration: const InputDecoration(labelText: 'RegNo'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter RegNo' : null,
+                  labelText: 'Registration Number',
+                  icon: Icons.confirmation_number,
+                  validator: (value) => value!.isEmpty
+                      ? 'Please enter registration number'
+                      : null,
                 ),
-                TextFormField(
+                _buildTextField(
                   controller: _pNameController,
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  labelText: 'Full Name',
+                  icon: Icons.person,
                   validator: (value) =>
-                      value!.isEmpty ? 'Please enter name' : null,
+                      value!.isEmpty ? 'Please enter full name' : null,
                 ),
-                TextFormField(
-                  controller: _pAddressController,
-                  decoration: const InputDecoration(labelText: 'Address'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter address' : null,
-                ),
-                TextFormField(
-                  controller: _pContactController,
-                  decoration: const InputDecoration(labelText: 'Contact'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter contact' : null,
-                ),
-                TextFormField(
+                _buildTextField(
                   controller: _pGenderController,
-                  decoration: const InputDecoration(labelText: 'Gender'),
+                  labelText: 'Gender',
+                  icon: Icons.wc,
                   validator: (value) =>
                       value!.isEmpty ? 'Please enter gender' : null,
                 ),
-                TextFormField(
+                _buildTextField(
                   controller: _pAgeController,
-                  decoration: const InputDecoration(labelText: 'Age'),
+                  labelText: 'Age',
+                  icon: Icons.calendar_today,
                   keyboardType: TextInputType.number,
                   validator: (value) =>
                       value!.isEmpty ? 'Please enter age' : null,
                 ),
-                TextFormField(
-                  controller: _drOidController,
-                  decoration: const InputDecoration(labelText: 'DrOID'),
-                  keyboardType: TextInputType.number,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter DrOID' : null,
-                ),
-                TextFormField(
+                _buildTextField(
                   controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'Title'),
+                  labelText: 'Title',
+                  icon: Icons.title,
                   validator: (value) =>
                       value!.isEmpty ? 'Please enter title' : null,
                 ),
-                TextFormField(
-                  controller: _memberIdController,
-                  decoration: const InputDecoration(labelText: 'MemberID'),
-                  keyboardType: TextInputType.number,
+                const SizedBox(height: 20),
+                _buildSectionTitle('Contact Information'),
+                _buildTextField(
+                  controller: _pAddressController,
+                  labelText: 'Address',
+                  icon: Icons.location_on,
+                  maxLines: 3,
                   validator: (value) =>
-                      value!.isEmpty ? 'Please enter MemberID' : null,
+                      value!.isEmpty ? 'Please enter address' : null,
                 ),
-                TextFormField(
-                  controller: _adharNoController,
-                  decoration: const InputDecoration(labelText: 'AdharNo'),
+                _buildTextField(
+                  controller: _pContactController,
+                  labelText: 'Contact Number',
+                  icon: Icons.phone,
+                  keyboardType: TextInputType.phone,
                   validator: (value) =>
-                      value!.isEmpty ? 'Please enter AdharNo' : null,
+                      value!.isEmpty ? 'Please enter contact number' : null,
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _savePatient,
-                  child: const Text('Save'),
+                _buildSectionTitle('Medical Information'),
+                _buildTextField(
+                  controller: _drOidController,
+                  labelText: 'Doctor ID',
+                  icon: Icons.local_hospital,
+                  keyboardType: TextInputType.number,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter doctor ID' : null,
+                ),
+                _buildTextField(
+                  controller: _memberIdController,
+                  labelText: 'Member ID',
+                  icon: Icons.badge,
+                  keyboardType: TextInputType.number,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter member ID' : null,
+                ),
+                _buildTextField(
+                  controller: _adharNoController,
+                  labelText: 'Aadhar Number',
+                  icon: Icons.credit_card,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter aadhar number' : null,
+                ),
+                const SizedBox(height: 30),
+                // Save button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _savePatient,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text(
+                      widget.patient == null ? 'Add Patient' : 'Update Patient',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20, bottom: 10),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    String? Function(String?)? validator,
+    TextInputType? keyboardType,
+    int? maxLines,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: TextFormField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: labelText,
+            prefixIcon: Icon(icon),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            filled: true,
+            fillColor: Colors.grey[50],
+          ),
+          keyboardType: keyboardType,
+          maxLines: maxLines ?? 1,
+          validator: validator,
         ),
       ),
     );
