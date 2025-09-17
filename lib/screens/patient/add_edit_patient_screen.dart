@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../helper/api_helper.dart';
+import '../utils/prefix_name_field.dart';
 
 class AddEditPatientScreen extends StatefulWidget {
   final Map<String, dynamic>? patient;
@@ -12,7 +13,7 @@ class AddEditPatientScreen extends StatefulWidget {
 
 class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _regNoController;
+  final _prefixNameKey = GlobalKey<State<PrefixNameField>>();
   late TextEditingController _pNameController;
   late TextEditingController _pAddressController;
   late TextEditingController _pContactController;
@@ -20,15 +21,10 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
   late TextEditingController _pAgeController;
   late TextEditingController _drOidController;
   late TextEditingController _titleController;
-  late TextEditingController _memberIdController;
-  late TextEditingController _adharNoController;
 
   @override
   void initState() {
     super.initState();
-    _regNoController = TextEditingController(
-      text: widget.patient?['RegNo'] ?? '',
-    );
     _pNameController = TextEditingController(
       text: widget.patient?['Pname'] ?? '',
     );
@@ -50,17 +46,10 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
     _titleController = TextEditingController(
       text: widget.patient?['Tital'] ?? '',
     );
-    _memberIdController = TextEditingController(
-      text: widget.patient?['MemberID']?.toString() ?? '',
-    );
-    _adharNoController = TextEditingController(
-      text: widget.patient?['AdharNo'] ?? '',
-    );
   }
 
   @override
   void dispose() {
-    _regNoController.dispose();
     _pNameController.dispose();
     _pAddressController.dispose();
     _pContactController.dispose();
@@ -68,15 +57,13 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
     _pAgeController.dispose();
     _drOidController.dispose();
     _titleController.dispose();
-    _memberIdController.dispose();
-    _adharNoController.dispose();
     super.dispose();
   }
 
   Future<void> _savePatient() async {
     if (_formKey.currentState!.validate()) {
+      // Get the full name from the PrefixNameField
       final patientData = {
-        'RegNo': _regNoController.text,
         'Pname': _pNameController.text,
         'Paddress': _pAddressController.text,
         'Pcontact': _pContactController.text,
@@ -84,8 +71,6 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
         'Page': _pAgeController.text,
         'DrOID': int.tryParse(_drOidController.text) ?? 0,
         'Tital': _titleController.text,
-        'MemberID': int.tryParse(_memberIdController.text) ?? 0,
-        'AdharNo': _adharNoController.text,
       };
 
       try {
@@ -122,176 +107,174 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
         title: Text(widget.patient == null ? 'Add Patient' : 'Edit Patient'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          if (widget.patient != null)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () {
+                // Add delete functionality
+              },
+            ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // Header card
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            widget.patient == null
-                                ? Icons.person_add
-                                : Icons.person,
-                            color: Theme.of(context).primaryColor,
-                            size: 32,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.patient == null
-                                    ? 'Add New Patient'
-                                    : 'Edit Patient',
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Fill in the patient details below',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).primaryColor.withOpacity(0.1),
+              Colors.transparent,
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Header card with improved design
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                // Form fields
-                _buildSectionTitle('Personal Information'),
-                _buildTextField(
-                  controller: _regNoController,
-                  labelText: 'Registration Number',
-                  icon: Icons.confirmation_number,
-                  validator: (value) => value!.isEmpty
-                      ? 'Please enter registration number'
-                      : null,
-                ),
-                _buildTextField(
-                  controller: _pNameController,
-                  labelText: 'Full Name',
-                  icon: Icons.person,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter full name' : null,
-                ),
-                _buildTextField(
-                  controller: _pGenderController,
-                  labelText: 'Gender',
-                  icon: Icons.wc,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter gender' : null,
-                ),
-                _buildTextField(
-                  controller: _pAgeController,
-                  labelText: 'Age',
-                  icon: Icons.calendar_today,
-                  keyboardType: TextInputType.number,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter age' : null,
-                ),
-                _buildTextField(
-                  controller: _titleController,
-                  labelText: 'Title',
-                  icon: Icons.title,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter title' : null,
-                ),
-                const SizedBox(height: 20),
-                _buildSectionTitle('Contact Information'),
-                _buildTextField(
-                  controller: _pAddressController,
-                  labelText: 'Address',
-                  icon: Icons.location_on,
-                  maxLines: 3,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter address' : null,
-                ),
-                _buildTextField(
-                  controller: _pContactController,
-                  labelText: 'Contact Number',
-                  icon: Icons.phone,
-                  keyboardType: TextInputType.phone,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter contact number' : null,
-                ),
-                const SizedBox(height: 20),
-                _buildSectionTitle('Medical Information'),
-                _buildTextField(
-                  controller: _drOidController,
-                  labelText: 'Doctor ID',
-                  icon: Icons.local_hospital,
-                  keyboardType: TextInputType.number,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter doctor ID' : null,
-                ),
-                _buildTextField(
-                  controller: _memberIdController,
-                  labelText: 'Member ID',
-                  icon: Icons.badge,
-                  keyboardType: TextInputType.number,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter member ID' : null,
-                ),
-                _buildTextField(
-                  controller: _adharNoController,
-                  labelText: 'Aadhar Number',
-                  icon: Icons.credit_card,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter aadhar number' : null,
-                ),
-                const SizedBox(height: 30),
-                // Save button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _savePatient,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 24),
+                  // Form fields with improved UX
+                  _buildSectionCard(
+                    context,
+                    widget.patient == null ? 'Add Patient' : 'Update Patient',
+                    [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildTextField(
+                              controller: _titleController,
+                              labelText: 'Title',
+                              icon: Icons.title,
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Please enter title' : null,
+                            ),
+                          ),
+                        ],
                       ),
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
+                      PrefixNameField(
+                        key: _prefixNameKey,
+                        prefixes: ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.'],
+                        nameController: _pNameController,
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDropdownField(
+                              controller: _pGenderController,
+                              labelText: 'Gender',
+                              icon: Icons.wc,
+                              items: ['Male', 'Female', 'Other'],
+                              validator: (value) => value!.isEmpty
+                                  ? 'Please select gender'
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildTextField(
+                              controller: _pAgeController,
+                              labelText: 'Age',
+                              icon: Icons.calendar_today,
+                              keyboardType: TextInputType.number,
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Please enter age' : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      _buildTextField(
+                        controller: _pContactController,
+                        labelText: 'Contact Number',
+                        icon: Icons.phone,
+                        keyboardType: TextInputType.phone,
+                        validator: (value) => value!.isEmpty
+                            ? 'Please enter contact number'
+                            : null,
+                      ),
+                      _buildDropdownField(
+                        controller: _drOidController,
+                        labelText: 'Select Doctor',
+                        icon: Icons.local_hospital,
+                        items: [
+                          'Doctor 1',
+                          'Doctor 2',
+                          'Doctor 3',
+                        ], // Dummy doctors for now
+                        validator: (value) =>
+                            value!.isEmpty ? 'Please select a doctor' : null,
+                      ),
+                      _buildTextField(
+                        controller: _pAddressController,
+                        labelText: 'Address',
+                        icon: Icons.location_on,
+                        maxLines: 3,
+                        validator: (value) =>
+                            value!.isEmpty ? 'Please enter address' : null,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+                  // Save button with improved design
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
-                    child: Text(
-                      widget.patient == null ? 'Add Patient' : 'Update Patient',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _savePatient,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.all(20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          widget.patient == null
+                              ? 'Add Patient'
+                              : 'Update Patient',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),
@@ -304,7 +287,47 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
       padding: const EdgeInsets.only(top: 20, bottom: 10),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.deepPurple,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard(
+    BuildContext context,
+    String title,
+    List<Widget> children,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.deepPurple,
+            ),
+          ),
+          const SizedBox(height: 20),
+          ...children,
+        ],
       ),
     );
   }
@@ -317,28 +340,73 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
     TextInputType? keyboardType,
     int? maxLines,
   }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: TextFormField(
-          controller: controller,
-          decoration: InputDecoration(
-            labelText: labelText,
-            prefixIcon: Icon(icon),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            filled: true,
-            fillColor: Colors.grey[50],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: const TextStyle(fontSize: 16, color: Colors.grey),
+          prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Colors.grey, width: 1.0),
           ),
-          keyboardType: keyboardType,
-          maxLines: maxLines ?? 1,
-          validator: validator,
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: Theme.of(context).primaryColor,
+              width: 2.0,
+            ),
+          ),
+          filled: true,
+          fillColor: Colors.grey[50],
         ),
+        keyboardType: keyboardType,
+        maxLines: maxLines ?? 1,
+        validator: validator,
+      ),
+    );
+  }
+
+  Widget _buildDropdownField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    required List<String> items,
+    String? Function(String?)? validator,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: DropdownButtonFormField<String>(
+        value: controller.text.isEmpty ? null : controller.text,
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: const TextStyle(fontSize: 16, color: Colors.grey),
+          prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: Theme.of(context).primaryColor,
+              width: 2.0,
+            ),
+          ),
+          filled: true,
+          fillColor: Colors.grey[50],
+        ),
+        items: items.map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(value: value, child: Text(value));
+        }).toList(),
+        onChanged: (String? newValue) {
+          if (newValue != null) {
+            controller.text = newValue;
+          }
+        },
+        validator: validator,
       ),
     );
   }

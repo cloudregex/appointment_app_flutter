@@ -140,142 +140,203 @@ class _PatientListScreenState extends State<PatientListScreen> {
   }
 
   Widget _buildPatientCard(Map<String, dynamic> patient) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      margin: const EdgeInsets.only(bottom: 16),
-      child: InkWell(
-        onTap: () => _navigateToDetailsScreen(patient),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with avatar and name
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      patient['Pgender'] == 'Male'
-                          ? Icons.male
-                          : patient['Pgender'] == 'Female'
-                          ? Icons.female
-                          : Icons.person,
-                      color: Theme.of(context).primaryColor,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          patient['Pname'] ?? 'Unknown',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: Card(
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: InkWell(
+          onTap: () => _navigateToDetailsScreen(patient),
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with avatar and name
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Reg No: ${patient['RegNo'] ?? 'N/A'}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
+                        ],
+                      ),
+                      child: Icon(
+                        patient['Pgender'] == 'Male'
+                            ? Icons.male
+                            : patient['Pgender'] == 'Female'
+                            ? Icons.female
+                            : Icons.person,
+                        color: Theme.of(context).primaryColor,
+                        size: 32,
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            patient['Pname'] ?? 'Unknown',
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.deepPurple,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 6),
+                          Text(
+                            'Reg No: ${patient['RegNo'] ?? 'N/A'}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.edit,
-                      color: Theme.of(context).primaryColor,
+                    IconButton(
+                      icon: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).primaryColor,
+                        size: 28,
+                      ),
+                      onPressed: () =>
+                          _navigateToAddEditScreen(patient: patient),
                     ),
-                    onPressed: () => _navigateToAddEditScreen(patient: patient),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Patient details
-              Row(
-                children: [
-                  _buildInfoChip(
-                    Icons.calendar_today,
-                    '${patient['Page'] ?? 'N/A'} yrs',
-                    context,
-                  ),
-                  const SizedBox(width: 12),
-                  _buildInfoChip(
-                    Icons.phone,
-                    patient['Pcontact'] ?? 'N/A',
-                    context,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoChip(
-                      Icons.location_on,
-                      patient['Paddress'] ?? 'N/A',
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Patient details with improved info chips
+                Row(
+                  children: [
+                    _buildInfoChip(
+                      Icons.calendar_today,
+                      '${patient['Page'] ?? 'N/A'} yrs',
                       context,
+                      Colors.blue,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Action buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => _navigateToDetailsScreen(patient),
-                    child: const Text('View Details'),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () => _navigateToAddEditScreen(patient: patient),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
+                    const SizedBox(width: 16),
+                    _buildInfoChip(
+                      Icons.phone,
+                      patient['Pcontact'] ?? 'N/A',
+                      context,
+                      Colors.green,
                     ),
-                    child: const Text('Edit'),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoChip(
+                        Icons.location_on,
+                        patient['Paddress'] ?? 'N/A',
+                        context,
+                        Colors.purple,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Action buttons with improved design
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => _navigateToDetailsScreen(patient),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        side: BorderSide(color: Theme.of(context).primaryColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'View Details',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () =>
+                          _navigateToAddEditScreen(patient: patient),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: const Text(
+                        'Edit',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text, BuildContext context) {
+  Widget _buildInfoChip(
+    IconData icon,
+    String text,
+    BuildContext context, [
+    Color? color,
+  ]) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: (color ?? Theme.of(context).primaryColor).withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: (color ?? Theme.of(context).primaryColor).withOpacity(0.2),
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Theme.of(context).primaryColor),
-          const SizedBox(width: 6),
+          Icon(icon, size: 18, color: color ?? Theme.of(context).primaryColor),
+          const SizedBox(width: 8),
           Text(
             text,
-            style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: color ?? Theme.of(context).primaryColor,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

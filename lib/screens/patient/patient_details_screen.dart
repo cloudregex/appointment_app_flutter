@@ -26,8 +26,9 @@ class PatientDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(patient['Pname'] ?? 'Patient Details'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.delete),
@@ -65,73 +66,102 @@ class PatientDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Patient header card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+            // Patient header card with improved design
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        patient['Pgender'] == 'Male'
-                            ? Icons.male
-                            : patient['Pgender'] == 'Female'
-                            ? Icons.female
-                            : Icons.person,
-                        color: Theme.of(context).primaryColor,
-                        size: 32,
-                      ),
+              padding: const EdgeInsets.all(24.0),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            patient['Pname'] ?? 'Unknown',
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Reg No: ${patient['RegNo'] ?? 'N/A'}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: Icon(
+                      patient['Pgender'] == 'Male'
+                          ? Icons.male
+                          : patient['Pgender'] == 'Female'
+                          ? Icons.female
+                          : Icons.person,
+                      color: Theme.of(context).primaryColor,
+                      size: 40,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          patient['Pname'] ?? 'Unknown',
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Reg No: ${patient['RegNo'] ?? 'N/A'}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        // Patient stats
+                        Row(
+                          children: [
+                            _buildStatChip(
+                              context,
+                              Icons.calendar_today,
+                              '${patient['Page'] ?? 'N/A'} yrs',
+                              Colors.blue,
+                            ),
+                            const SizedBox(width: 16),
+                            _buildStatChip(
+                              context,
+                              Icons.phone,
+                              patient['Pcontact'] ?? 'N/A',
+                              Colors.green,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 20),
-            // Patient details section
-            const Text(
-              'Patient Information',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
+            // Patient details section with improved cards
             _buildInfoCard(context, Icons.person, 'Personal Details', [
               _buildInfoRow('Name', patient['Pname']),
               _buildInfoRow('Gender', patient['Pgender']),
               _buildInfoRow('Age', '${patient['Page']} years'),
               _buildInfoRow('Title', patient['Tital']),
             ]),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             _buildInfoCard(
               context,
               Icons.contact_phone,
@@ -141,12 +171,57 @@ class PatientDetailsScreen extends StatelessWidget {
                 _buildInfoRow('Address', patient['Paddress']),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             _buildInfoCard(context, Icons.assignment, 'Medical Information', [
-              _buildInfoRow('Member ID', patient['MemberID']?.toString()),
               _buildInfoRow('Doctor ID', patient['DrOID']?.toString()),
-              _buildInfoRow('Aadhar No', patient['AdharNo']),
             ]),
+            const SizedBox(height: 20),
+            // Action buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton(
+                  onPressed: () {
+                    // Add edit functionality
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    side: BorderSide(color: Theme.of(context).primaryColor),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Edit Patient',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // Add appointment functionality
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Book Appointment',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -208,6 +283,37 @@ class PatientDetailsScreen extends StatelessWidget {
             child: Text(
               value ?? 'N/A',
               style: const TextStyle(color: Colors.grey),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatChip(
+    BuildContext context,
+    IconData icon,
+    String text,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: color,
             ),
           ),
         ],
