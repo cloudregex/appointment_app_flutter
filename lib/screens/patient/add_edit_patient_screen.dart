@@ -48,7 +48,6 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
       prefix = 'Prof.';
       fullName = fullName.replaceFirst('Prof.', '').trim();
     }
-    print(fullName);
     _selectedPrefix = prefix;
 
     _pNameController = TextEditingController(text: fullName);
@@ -59,7 +58,7 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
       text: widget.patient?['Pcontact'] ?? '',
     );
     _pGenderController = TextEditingController(
-      text: widget.patient?['Pgender'] ?? '',
+      text: widget.patient?['Pgender'] ?? 'Male',
     );
     _pAgeController = TextEditingController(
       text: widget.patient?['Page']?.toString() ?? '',
@@ -92,7 +91,7 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
             doctorsList = List<Map<String, dynamic>>.from(response['doctors']);
           } else {
             // Handle single object response or other formats
-            print('Unexpected response format: $response');
+            print('Unexpected response format');
           }
         }
 
@@ -146,8 +145,6 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
         print('Error getting full name from PrefixNameField');
       }
 
-      print('Combined name to be stored: $fullName');
-
       final patientData = {
         'Pname': fullName,
         'Paddress': _pAddressController.text,
@@ -157,7 +154,6 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
         'DrOID': _drOidController.text,
         'Tital': _titleController.text,
       };
-      print(patientData);
       try {
         if (widget.patient == null) {
           await ApiHelper.request(
@@ -260,42 +256,64 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
                         prefixes: ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.'],
                         nameController: _pNameController,
                         initialPrefix: _selectedPrefix,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter full name';
+                          }
+                          // Additional validation can be added here if needed
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildDropdownField(
-                              controller: _pGenderController,
-                              labelText: 'Gender',
-                              icon: Icons.wc,
-                              items: ['Male', 'Female', 'Other'],
-                              validator: (value) => value!.isEmpty
-                                  ? 'Please select gender'
-                                  : null,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildTextField(
-                              controller: _pAgeController,
-                              labelText: 'Age',
-                              icon: Icons.calendar_today,
-                              keyboardType: TextInputType.number,
-                              validator: (value) =>
-                                  value!.isEmpty ? 'Please enter age' : null,
-                            ),
-                          ),
-                        ],
+                      _buildDropdownField(
+                        controller: _pGenderController,
+                        labelText: 'Gender',
+                        icon: Icons.wc,
+                        items: ['Male', 'Female', 'Other'],
+                        validator: (value) =>
+                            value!.isEmpty ? 'Please select gender' : null,
+                      ),
+                      _buildTextField(
+                        controller: _pAgeController,
+                        labelText: 'Age',
+                        icon: Icons.calendar_today,
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter age';
+                          }
+                          final age = int.tryParse(value);
+                          if (age == null) {
+                            return 'Please enter a valid number';
+                          }
+                          if (age < 0 || age > 150) {
+                            return 'Please enter a valid age (0-150)';
+                          }
+                          return null;
+                        },
                       ),
                       _buildTextField(
                         controller: _pContactController,
                         labelText: 'Contact Number',
                         icon: Icons.phone,
                         keyboardType: TextInputType.phone,
-                        validator: (value) => value!.isEmpty
-                            ? 'Please enter contact number'
-                            : null,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter contact number';
+                          }
+                          // Remove any non-digit characters for validation
+                          final digitsOnly = value.replaceAll(
+                            RegExp(r'[^0-9]'),
+                            '',
+                          );
+                          if (digitsOnly.isEmpty) {
+                            return 'Please enter a valid contact number';
+                          }
+                          if (digitsOnly.length < 10) {
+                            return 'Contact number should be at least 10 digits';
+                          }
+                          return null;
+                        },
                       ),
                       _buildDoctorDropdownField(),
                       _buildTextField(

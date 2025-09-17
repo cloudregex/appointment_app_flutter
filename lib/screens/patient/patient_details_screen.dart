@@ -61,169 +61,276 @@ class PatientDetailsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Patient header card with improved design
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Patient header card with improved design
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              padding: const EdgeInsets.all(24.0),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
                           color: Theme.of(
                             context,
-                          ).primaryColor.withOpacity(0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      patient['Pgender'] == 'Male'
-                          ? Icons.male
-                          : patient['Pgender'] == 'Female'
-                          ? Icons.female
-                          : Icons.person,
-                      color: Theme.of(context).primaryColor,
-                      size: 40,
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          patient['Pname'] ?? 'Unknown',
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepPurple,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Reg No: ${patient['RegNo'] ?? 'N/A'}',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        // Patient stats
-                        Row(
-                          children: [
-                            _buildStatChip(
-                              context,
-                              Icons.calendar_today,
-                              '${patient['Page'] ?? 'N/A'} yrs',
-                              Colors.blue,
-                            ),
-                            const SizedBox(width: 16),
-                            _buildStatChip(
-                              context,
-                              Icons.phone,
-                              patient['Pcontact'] ?? 'N/A',
-                              Colors.green,
+                          ).primaryColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Theme.of(
+                                context,
+                              ).primaryColor.withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Patient details section with improved cards
-            _buildInfoCard(context, Icons.person, 'Personal Details', [
-              _buildInfoRow('Name', patient['Pname']),
-              _buildInfoRow('Gender', patient['Pgender']),
-              _buildInfoRow('Age', '${patient['Page']} years'),
-              _buildInfoRow('Title', patient['Tital']),
-            ]),
-            const SizedBox(height: 20),
-            _buildInfoCard(
-              context,
-              Icons.contact_phone,
-              'Contact Information',
-              [
-                _buildInfoRow('Contact', patient['Pcontact']),
-                _buildInfoRow('Address', patient['Paddress']),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _buildInfoCard(context, Icons.assignment, 'Medical Information', [
-              _buildInfoRow('Doctor ID', patient['DrOID']?.toString()),
-            ]),
-            const SizedBox(height: 20),
-            // Action buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                OutlinedButton(
-                  onPressed: () {
-                    // Add edit functionality
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    side: BorderSide(color: Theme.of(context).primaryColor),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Edit Patient',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        child: Icon(
+                          patient['Pgender'] == 'Male'
+                              ? Icons.male
+                              : patient['Pgender'] == 'Female'
+                              ? Icons.female
+                              : Icons.person,
+                          color: Theme.of(context).primaryColor,
+                          size: 40,
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              patient['Pname'] ?? 'Unknown',
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.deepPurple,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Reg No: ${patient['RegNo'] ?? 'N/A'}',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            // Patient stats - responsive layout
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                if (constraints.maxWidth < 300) {
+                                  // Vertical layout for small screens
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _buildStatChip(
+                                        context,
+                                        Icons.calendar_today,
+                                        '${patient['Page'] ?? 'N/A'} yrs',
+                                        Colors.blue,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      _buildStatChip(
+                                        context,
+                                        Icons.phone,
+                                        patient['Pcontact'] ?? 'N/A',
+                                        Colors.green,
+                                      ),
+                                    ],
+                                  );
+                                } else {
+                                  // Horizontal layout for larger screens
+                                  return Row(
+                                    children: [
+                                      _buildStatChip(
+                                        context,
+                                        Icons.calendar_today,
+                                        '${patient['Page'] ?? 'N/A'} yrs',
+                                        Colors.blue,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      _buildStatChip(
+                                        context,
+                                        Icons.phone,
+                                        patient['Pcontact'] ?? 'N/A',
+                                        Colors.green,
+                                      ),
+                                    ],
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    // Add appointment functionality
+                const SizedBox(height: 24),
+                // Patient details section with improved cards
+                _buildInfoCard(context, Icons.person, 'Personal Details', [
+                  _buildInfoRow('Name', patient['Pname']),
+                  _buildInfoRow('Gender', patient['Pgender']),
+                  _buildInfoRow('Age', '${patient['Page']} years'),
+                  _buildInfoRow('Title', patient['Tital']),
+                ]),
+                const SizedBox(height: 20),
+                _buildInfoCard(
+                  context,
+                  Icons.contact_phone,
+                  'Contact Information',
+                  [
+                    _buildInfoRow('Contact', patient['Pcontact']),
+                    _buildInfoRow('Address', patient['Paddress']),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _buildInfoCard(
+                  context,
+                  Icons.assignment,
+                  'Medical Information',
+                  [_buildInfoRow('Doctor ID', patient['DrOID']?.toString())],
+                ),
+                const SizedBox(height: 20),
+                // Action buttons - responsive layout
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth < 350) {
+                      // Vertical layout for small screens
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              // Add appointment functionality
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 16,
+                              ),
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Book Appointment',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton(
+                            onPressed: () {
+                              // Add edit functionality
+                            },
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 16,
+                              ),
+                              side: BorderSide(
+                                color: Theme.of(context).primaryColor,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Edit Patient',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    } else {
+                      // Horizontal layout for larger screens
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton(
+                            onPressed: () {
+                              // Add edit functionality
+                            },
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              side: BorderSide(
+                                color: Theme.of(context).primaryColor,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Edit Patient',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              // Add appointment functionality
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Book Appointment',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
                   },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Book Appointment',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
                 ),
               ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

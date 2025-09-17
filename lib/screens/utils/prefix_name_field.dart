@@ -4,12 +4,14 @@ class PrefixNameField extends StatefulWidget {
   final List<String> prefixes;
   final TextEditingController nameController;
   final String? initialPrefix;
+  final String? Function(String?)? validator;
 
   const PrefixNameField({
     Key? key,
     required this.prefixes,
     required this.nameController,
     this.initialPrefix,
+    this.validator,
   }) : super(key: key);
 
   @override
@@ -87,7 +89,17 @@ class _PrefixNameFieldState extends State<PrefixNameField> {
         ),
         hintText: "Full Name",
       ),
-      validator: (value) => value!.isEmpty ? 'Please enter full name' : null,
+      validator: (value) {
+        // Use custom validator if provided, otherwise use default
+        if (widget.validator != null) {
+          final result = widget.validator!(value);
+          if (result != null) {
+            return result;
+          }
+        }
+        // Default validation
+        return value!.isEmpty ? 'Please enter full name' : null;
+      },
     );
   }
 
