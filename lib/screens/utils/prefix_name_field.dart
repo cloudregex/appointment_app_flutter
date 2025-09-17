@@ -30,7 +30,6 @@ class _PrefixNameFieldState extends State<PrefixNameField> {
     return TextFormField(
       controller: widget.nameController,
       decoration: InputDecoration(
-        // rounded border style
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
@@ -42,15 +41,17 @@ class _PrefixNameFieldState extends State<PrefixNameField> {
         filled: true,
         fillColor: Colors.grey[50],
 
-        // 👉 left side prefix dropdown
+        // 👉 Prefix dropdown left side
         prefixIcon: DropdownButtonHideUnderline(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: DropdownButton<String>(
               value: _selectedPrefix,
-              hint: const Text("Mr."),
+              hint: const Text("Prefix"),
               items: widget.prefixes
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .map(
+                    (e) => DropdownMenuItem<String>(value: e, child: Text(e)),
+                  )
                   .toList(),
               onChanged: (value) {
                 setState(() {
@@ -60,15 +61,19 @@ class _PrefixNameFieldState extends State<PrefixNameField> {
             ),
           ),
         ),
-
-        // 👉 hint style text
         hintText: "Full Name",
       ),
       validator: (value) => value!.isEmpty ? 'Please enter full name' : null,
     );
   }
 
-  /// Helper: Get merged name
+  /// 👉 फक्त prefix मिळवण्यासाठी
+  String? getPrefix() => _selectedPrefix;
+
+  /// 👉 फक्त नाव (TextField मध्ये typed केलेलं) मिळवण्यासाठी
+  String getNameOnly() => widget.nameController.text.trim();
+
+  /// 👉 जर तुला combined हवं असेल तर
   String getFullName() {
     if (_selectedPrefix != null && _selectedPrefix!.isNotEmpty) {
       return '$_selectedPrefix ${widget.nameController.text}'.trim();

@@ -22,6 +22,8 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
   late TextEditingController _drOidController;
   late TextEditingController _titleController;
 
+  List<Map<String, dynamic>> _doctors = [];
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +48,54 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
     _titleController = TextEditingController(
       text: widget.patient?['Tital'] ?? '',
     );
+
+    _fetchDoctors();
+  }
+
+  Future<void> _fetchDoctors() async {
+    try {
+      final response = await ApiHelper.request('doctors-list');
+      if (response != null) {
+        List<Map<String, dynamic>> doctorsList = [];
+
+        // Handle different response formats
+        if (response is List) {
+          // Direct list response
+          doctorsList = List<Map<String, dynamic>>.from(response);
+        } else if (response is Map<String, dynamic>) {
+          // Handle wrapped response like { "data": [...] } or { "doctors": [...] }
+          if (response['data'] is List) {
+            doctorsList = List<Map<String, dynamic>>.from(response['data']);
+          } else if (response['doctors'] is List) {
+            doctorsList = List<Map<String, dynamic>>.from(response['doctors']);
+          } else {
+            // Handle single object response or other formats
+            print('Unexpected response format: $response');
+          }
+        }
+
+        setState(() {
+          _doctors = doctorsList;
+        });
+
+        print('Loaded ${doctorsList.length} doctors');
+      } else {
+        print('Empty response from doctors API');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No doctors data received')),
+          );
+        }
+      }
+    } catch (e, stackTrace) {
+      print('Error fetching doctors: $e');
+      print('Stack trace: $stackTrace');
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load doctors: $e')));
+      }
+    }
   }
 
   @override
@@ -69,10 +119,10 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
         'Pcontact': _pContactController.text,
         'Pgender': _pGenderController.text,
         'Page': _pAgeController.text,
-        'DrOID': int.tryParse(_drOidController.text) ?? 0,
+        'DrOID': _drOidController.text,
         'Tital': _titleController.text,
       };
-
+      print(patientData);
       try {
         if (widget.patient == null) {
           await ApiHelper.request(
@@ -173,6 +223,7 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
                         key: _prefixNameKey,
                         prefixes: ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.'],
                         nameController: _pNameController,
+                        initialPrefix: 'Mr.',
                       ),
                       const SizedBox(height: 20),
                       Row(
@@ -210,18 +261,7 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
                             ? 'Please enter contact number'
                             : null,
                       ),
-                      _buildDropdownField(
-                        controller: _drOidController,
-                        labelText: 'Select Doctor',
-                        icon: Icons.local_hospital,
-                        items: [
-                          'Doctor 1',
-                          'Doctor 2',
-                          'Doctor 3',
-                        ], // Dummy doctors for now
-                        validator: (value) =>
-                            value!.isEmpty ? 'Please select a doctor' : null,
-                      ),
+                      _buildDoctorDropdownField(),
                       _buildTextField(
                         controller: _pAddressController,
                         labelText: 'Address',
@@ -407,6 +447,60 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
           }
         },
         validator: validator,
+      ),
+    );
+  }
+
+  Widget _buildDoctorDropdownField() {
+    // Show loading indicator if doctors haven't been loaded yet
+    if (_doctors.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        child: const ListTile(
+          title: Text('Select Doctor'),
+          subtitle: Text('Loading doctors...'),
+          leading: Icon(Icons.local_hospital, color: Colors.grey),
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: DropdownButtonFormField<String>(
+        value: _drOidController.text.isEmpty ? null : _drOidController.text,
+        decoration: InputDecoration(
+          labelText: 'Select Doctor',
+          labelStyle: const TextStyle(fontSize: 16, color: Colors.grey),
+          prefixIcon: Icon(
+            Icons.local_hospital,
+            color: Theme.of(context).primaryColor,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: Theme.of(context).primaryColor,
+              width: 2.0,
+            ),
+          ),
+          filled: true,
+          fillColor: Colors.grey[50],
+        ),
+        items: _doctors.map<DropdownMenuItem<String>>((doctor) {
+          return DropdownMenuItem<String>(
+            value: doctor['DrOID'].toString(),
+            child: Text(doctor['Name'] ?? 'Unknown Doctor'),
+          );
+        }).toList(),
+        onChanged: (String? newValue) {
+          if (newValue != null) {
+            _drOidController.text = newValue;
+          }
+        },
+        validator: (value) => value!.isEmpty ? 'Please select a doctor' : null,
       ),
     );
   }
