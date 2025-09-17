@@ -16,7 +16,7 @@ class PatientDetailsScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to delete patient: $e')));
+        ).showSnackBar(SnackBar(content: Text('Failed to delete patient')));
       }
     }
   }

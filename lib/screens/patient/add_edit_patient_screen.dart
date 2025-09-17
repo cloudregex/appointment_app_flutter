@@ -22,14 +22,36 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
   late TextEditingController _drOidController;
   late TextEditingController _titleController;
 
+  String _selectedPrefix = 'Mr.'; // default prefix
   List<Map<String, dynamic>> _doctors = [];
 
   @override
   void initState() {
     super.initState();
-    _pNameController = TextEditingController(
-      text: widget.patient?['Pname'] ?? '',
-    );
+    String fullName = widget.patient?['Pname'] ?? '';
+    String prefix = 'Mr.'; // default
+
+    // Try to extract prefix if exists
+    if (fullName.startsWith('Dr.')) {
+      prefix = 'Dr.';
+      fullName = fullName.replaceFirst('Dr.', '').trim();
+    } else if (fullName.startsWith('Mr.')) {
+      prefix = 'Mr.';
+      fullName = fullName.replaceFirst('Mr.', '').trim();
+    } else if (fullName.startsWith('Mrs.')) {
+      prefix = 'Mrs.';
+      fullName = fullName.replaceFirst('Mrs.', '').trim();
+    } else if (fullName.startsWith('Ms.')) {
+      prefix = 'Ms.';
+      fullName = fullName.replaceFirst('Ms.', '').trim();
+    } else if (fullName.startsWith('Prof.')) {
+      prefix = 'Prof.';
+      fullName = fullName.replaceFirst('Prof.', '').trim();
+    }
+    print(fullName);
+    _selectedPrefix = prefix;
+
+    _pNameController = TextEditingController(text: fullName);
     _pAddressController = TextEditingController(
       text: widget.patient?['Paddress'] ?? '',
     );
@@ -88,12 +110,11 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
         }
       }
     } catch (e, stackTrace) {
-      print('Error fetching doctors: $e');
       print('Stack trace: $stackTrace');
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to load doctors: $e')));
+        ).showSnackBar(SnackBar(content: Text('Failed to load doctors')));
       }
     }
   }
@@ -113,8 +134,22 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
   Future<void> _savePatient() async {
     if (_formKey.currentState!.validate()) {
       // Get the full name from the PrefixNameField
+      String fullName = _pNameController.text; // Default to controller text
+
+      // Try to get the combined name from the PrefixNameField widget
+      try {
+        final prefixNameState = _prefixNameKey.currentState as dynamic;
+        if (prefixNameState != null) {
+          fullName = prefixNameState.getFullName() as String;
+        }
+      } catch (e) {
+        print('Error getting full name from PrefixNameField');
+      }
+
+      print('Combined name to be stored: $fullName');
+
       final patientData = {
-        'Pname': _pNameController.text,
+        'Pname': fullName,
         'Paddress': _pAddressController.text,
         'Pcontact': _pContactController.text,
         'Pgender': _pGenderController.text,
@@ -142,9 +177,10 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
         }
       } catch (e) {
         if (context.mounted) {
+          print(e);
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('Failed to save patient: $e')));
+          ).showSnackBar(SnackBar(content: Text('Failed to save patient')));
         }
       }
     }
@@ -223,7 +259,7 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
                         key: _prefixNameKey,
                         prefixes: ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.'],
                         nameController: _pNameController,
-                        initialPrefix: 'Mr.',
+                        initialPrefix: _selectedPrefix,
                       ),
                       const SizedBox(height: 20),
                       Row(

@@ -29,7 +29,7 @@ class _PatientListScreenState extends State<PatientListScreen> {
       }
     } catch (e) {
       print(e);
-      throw Exception('Failed to load patients: $e');
+      throw Exception('Failed to load patients');
     }
   }
 
