@@ -88,7 +88,7 @@ class _SearchDropdownState extends State<SearchDropdown> {
             fillColor: Colors.grey.shade100,
             hintText: widget.hintText,
             hintStyle: const TextStyle(color: Colors.grey),
-            prefixIcon: const Icon(Icons.search, color: Colors.blue),
+            prefixIcon: const Icon(Icons.search, color: Colors.deepPurple),
             suffixIcon: _isLoading
                 ? const Padding(
                     padding: EdgeInsets.all(12.0),
@@ -105,7 +105,7 @@ class _SearchDropdownState extends State<SearchDropdown> {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade400),
+              borderSide: BorderSide(color: Colors.black),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
