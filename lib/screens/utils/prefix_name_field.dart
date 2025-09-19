@@ -3,43 +3,23 @@ import 'package:flutter/material.dart';
 class PrefixNameField extends StatefulWidget {
   final List<String> prefixes;
   final TextEditingController nameController;
+  final TextEditingController prefixController; // TextEditingController
   final String? initialPrefix;
   final String? Function(String?)? validator;
+  final String hintText;
 
   const PrefixNameField({
     Key? key,
     required this.prefixes,
     required this.nameController,
+    required this.prefixController,
     this.initialPrefix,
     this.validator,
+    this.hintText = "Patient full name",
   }) : super(key: key);
 
   @override
   State<PrefixNameField> createState() => _PrefixNameFieldState();
-
-  /// Get the selected prefix
-  String? getPrefix() {
-    // This is a workaround to access the state's method
-    // In a real implementation, you might want to use a different approach
-    return null;
-  }
-
-  /// Get just the name part (without prefix)
-  String getNameOnly() {
-    // This is a workaround to access the state's method
-    // In a real implementation, you might want to use a different approach
-    return nameController.text;
-  }
-
-  /// Get the full name (prefix + name)
-  String getFullName() {
-    // This is a workaround to access the state's method
-    // In a real implementation, you might want to use a different approach
-    if (initialPrefix != null && initialPrefix!.isNotEmpty) {
-      return '$initialPrefix ${nameController.text}'.trim();
-    }
-    return nameController.text.trim();
-  }
 }
 
 class _PrefixNameFieldState extends State<PrefixNameField> {
@@ -48,7 +28,19 @@ class _PrefixNameFieldState extends State<PrefixNameField> {
   @override
   void initState() {
     super.initState();
-    _selectedPrefix = widget.initialPrefix;
+
+    // Initialize prefix
+    _selectedPrefix = widget.initialPrefix ?? widget.prefixController.text;
+    widget.prefixController.text = _selectedPrefix ?? "";
+
+    // Listen to prefixController changes
+    widget.prefixController.addListener(() {
+      if (widget.prefixController.text != _selectedPrefix) {
+        setState(() {
+          _selectedPrefix = widget.prefixController.text;
+        });
+      }
+    });
   }
 
   @override
@@ -66,13 +58,16 @@ class _PrefixNameFieldState extends State<PrefixNameField> {
         ),
         filled: true,
         fillColor: Colors.grey[50],
-
-        // 👉 Prefix dropdown left side
         prefixIcon: DropdownButtonHideUnderline(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: DropdownButton<String>(
-              value: _selectedPrefix,
+              value:
+                  (widget.prefixes.contains(_selectedPrefix) &&
+                      _selectedPrefix != null &&
+                      _selectedPrefix!.isNotEmpty)
+                  ? _selectedPrefix
+                  : null,
               hint: const Text("Prefix"),
               items: widget.prefixes
                   .map(
@@ -82,38 +77,16 @@ class _PrefixNameFieldState extends State<PrefixNameField> {
               onChanged: (value) {
                 setState(() {
                   _selectedPrefix = value;
+                  widget.prefixController.text =
+                      value ?? ""; // ✅ Correct assignment
                 });
               },
             ),
           ),
         ),
-        hintText: "Full Name",
+        hintText: widget.hintText,
       ),
-      validator: (value) {
-        // Use custom validator if provided, otherwise use default
-        if (widget.validator != null) {
-          final result = widget.validator!(value);
-          if (result != null) {
-            return result;
-          }
-        }
-        // Default validation
-        return value!.isEmpty ? 'Please enter full name' : null;
-      },
+      validator: widget.validator,
     );
-  }
-
-  /// 👉 फक्त prefix मिळवण्यासाठी
-  String? getPrefix() => _selectedPrefix;
-
-  /// 👉 फक्त नाव (TextField मध्ये typed केलेलं) मिळवण्यासाठी
-  String getNameOnly() => widget.nameController.text.trim();
-
-  /// 👉 जर तुला combined हवं असेल तर
-  String getFullName() {
-    if (_selectedPrefix != null && _selectedPrefix!.isNotEmpty) {
-      return '$_selectedPrefix ${widget.nameController.text}'.trim();
-    }
-    return widget.nameController.text.trim();
   }
 }

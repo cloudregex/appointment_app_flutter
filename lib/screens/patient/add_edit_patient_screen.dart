@@ -1,3 +1,4 @@
+import 'package:appointment_app/screens/utils/search_dropdown.dart';
 import 'package:flutter/material.dart';
 import '../../helper/api_helper.dart';
 import '../utils/prefix_name_field.dart';
@@ -13,7 +14,6 @@ class AddEditPatientScreen extends StatefulWidget {
 
 class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _prefixNameKey = GlobalKey<State<PrefixNameField>>();
   late TextEditingController _pNameController;
   late TextEditingController _pAddressController;
   late TextEditingController _pContactController;
@@ -22,35 +22,12 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
   late TextEditingController _drOidController;
   late TextEditingController _titleController;
 
-  String _selectedPrefix = 'Mr.'; // default prefix
-  List<Map<String, dynamic>> _doctors = [];
-
   @override
   void initState() {
     super.initState();
-    String fullName = widget.patient?['Pname'] ?? '';
-    String prefix = 'Mr.'; // default
-
-    // Try to extract prefix if exists
-    if (fullName.startsWith('Dr.')) {
-      prefix = 'Dr.';
-      fullName = fullName.replaceFirst('Dr.', '').trim();
-    } else if (fullName.startsWith('Mr.')) {
-      prefix = 'Mr.';
-      fullName = fullName.replaceFirst('Mr.', '').trim();
-    } else if (fullName.startsWith('Mrs.')) {
-      prefix = 'Mrs.';
-      fullName = fullName.replaceFirst('Mrs.', '').trim();
-    } else if (fullName.startsWith('Ms.')) {
-      prefix = 'Ms.';
-      fullName = fullName.replaceFirst('Ms.', '').trim();
-    } else if (fullName.startsWith('Prof.')) {
-      prefix = 'Prof.';
-      fullName = fullName.replaceFirst('Prof.', '').trim();
-    }
-    _selectedPrefix = prefix;
-
-    _pNameController = TextEditingController(text: fullName);
+    _pNameController = TextEditingController(
+      text: widget.patient?['Pname'] ?? '',
+    );
     _pAddressController = TextEditingController(
       text: widget.patient?['Paddress'] ?? '',
     );
@@ -69,53 +46,6 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
     _titleController = TextEditingController(
       text: widget.patient?['Tital'] ?? '',
     );
-
-    _fetchDoctors();
-  }
-
-  Future<void> _fetchDoctors() async {
-    try {
-      final response = await ApiHelper.request('doctors-list');
-      if (response != null) {
-        List<Map<String, dynamic>> doctorsList = [];
-
-        // Handle different response formats
-        if (response is List) {
-          // Direct list response
-          doctorsList = List<Map<String, dynamic>>.from(response);
-        } else if (response is Map<String, dynamic>) {
-          // Handle wrapped response like { "data": [...] } or { "doctors": [...] }
-          if (response['data'] is List) {
-            doctorsList = List<Map<String, dynamic>>.from(response['data']);
-          } else if (response['doctors'] is List) {
-            doctorsList = List<Map<String, dynamic>>.from(response['doctors']);
-          } else {
-            // Handle single object response or other formats
-            print('Unexpected response format');
-          }
-        }
-
-        setState(() {
-          _doctors = doctorsList;
-        });
-
-        print('Loaded ${doctorsList.length} doctors');
-      } else {
-        print('Empty response from doctors API');
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No doctors data received')),
-          );
-        }
-      }
-    } catch (e, stackTrace) {
-      print('Stack trace: $stackTrace');
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to load doctors')));
-      }
-    }
   }
 
   @override
@@ -133,20 +63,8 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
   Future<void> _savePatient() async {
     if (_formKey.currentState!.validate()) {
       // Get the full name from the PrefixNameField
-      String fullName = _pNameController.text; // Default to controller text
-
-      // Try to get the combined name from the PrefixNameField widget
-      try {
-        final prefixNameState = _prefixNameKey.currentState as dynamic;
-        if (prefixNameState != null) {
-          fullName = prefixNameState.getFullName() as String;
-        }
-      } catch (e) {
-        print('Error getting full name from PrefixNameField');
-      }
-
       final patientData = {
-        'Pname': fullName,
+        'Pname': _pNameController.text,
         'Paddress': _pAddressController.text,
         'Pcontact': _pContactController.text,
         'Pgender': _pGenderController.text,
@@ -238,29 +156,21 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
                     context,
                     widget.patient == null ? 'Add Patient' : 'Update Patient',
                     [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField(
-                              controller: _titleController,
-                              labelText: 'Title',
-                              icon: Icons.title,
-                              validator: (value) =>
-                                  value!.isEmpty ? 'Please enter title' : null,
-                            ),
-                          ),
-                        ],
-                      ),
                       PrefixNameField(
-                        key: _prefixNameKey,
-                        prefixes: ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.'],
+                        prefixes: [
+                          'Mr.',
+                          'Mrs.',
+                          'Ms.',
+                          'Dr.',
+                          'Prof.',
+                        ], // Dropdown items
                         nameController: _pNameController,
-                        initialPrefix: _selectedPrefix,
+                        prefixController: _titleController,
+                        hintText: "Enter patient full name",
                         validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter full name';
+                          if (value == null || value.isEmpty) {
+                            return "Please enter full name";
                           }
-                          // Additional validation can be added here if needed
                           return null;
                         },
                       ),
@@ -270,59 +180,38 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
                         labelText: 'Gender',
                         icon: Icons.wc,
                         items: ['Male', 'Female', 'Other'],
-                        validator: (value) =>
-                            value!.isEmpty ? 'Please select gender' : null,
                       ),
                       _buildTextField(
                         controller: _pAgeController,
                         labelText: 'Age',
                         icon: Icons.calendar_today,
                         keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter age';
-                          }
-                          final age = int.tryParse(value);
-                          if (age == null) {
-                            return 'Please enter a valid number';
-                          }
-                          if (age < 0 || age > 150) {
-                            return 'Please enter a valid age (0-150)';
-                          }
-                          return null;
-                        },
                       ),
                       _buildTextField(
                         controller: _pContactController,
                         labelText: 'Contact Number',
                         icon: Icons.phone,
                         keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter contact number';
-                          }
-                          // Remove any non-digit characters for validation
-                          final digitsOnly = value.replaceAll(
-                            RegExp(r'[^0-9]'),
-                            '',
-                          );
-                          if (digitsOnly.isEmpty) {
-                            return 'Please enter a valid contact number';
-                          }
-                          if (digitsOnly.length < 10) {
-                            return 'Contact number should be at least 10 digits';
-                          }
-                          return null;
+                      ),
+                      SearchDropdown(
+                        apiUrl: "doctors-list",
+                        hintText: "Search Doctor",
+                        displayKey: "Name",
+                        valueKey: "DrOID",
+                        initialValue: widget.patient?['DrOID']
+                            ?.toString(), // Pass initial value
+                        onItemSelected: (doctor) {
+                          setState(() {
+                            _drOidController.text = doctor['DrOID'].toString();
+                          });
                         },
                       ),
-                      _buildDoctorDropdownField(),
+                      const SizedBox(height: 12),
                       _buildTextField(
                         controller: _pAddressController,
                         labelText: 'Address',
                         icon: Icons.location_on,
                         maxLines: 3,
-                        validator: (value) =>
-                            value!.isEmpty ? 'Please enter address' : null,
                       ),
                     ],
                   ),
@@ -501,60 +390,6 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
           }
         },
         validator: validator,
-      ),
-    );
-  }
-
-  Widget _buildDoctorDropdownField() {
-    // Show loading indicator if doctors haven't been loaded yet
-    if (_doctors.isEmpty) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        child: const ListTile(
-          title: Text('Select Doctor'),
-          subtitle: Text('Loading doctors...'),
-          leading: Icon(Icons.local_hospital, color: Colors.grey),
-        ),
-      );
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: DropdownButtonFormField<String>(
-        value: _drOidController.text.isEmpty ? null : _drOidController.text,
-        decoration: InputDecoration(
-          labelText: 'Select Doctor',
-          labelStyle: const TextStyle(fontSize: 16, color: Colors.grey),
-          prefixIcon: Icon(
-            Icons.local_hospital,
-            color: Theme.of(context).primaryColor,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Colors.grey, width: 1.0),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: Theme.of(context).primaryColor,
-              width: 2.0,
-            ),
-          ),
-          filled: true,
-          fillColor: Colors.grey[50],
-        ),
-        items: _doctors.map<DropdownMenuItem<String>>((doctor) {
-          return DropdownMenuItem<String>(
-            value: doctor['DrOID'].toString(),
-            child: Text(doctor['Name'] ?? 'Unknown Doctor'),
-          );
-        }).toList(),
-        onChanged: (String? newValue) {
-          if (newValue != null) {
-            _drOidController.text = newValue;
-          }
-        },
-        validator: (value) => value!.isEmpty ? 'Please select a doctor' : null,
       ),
     );
   }
