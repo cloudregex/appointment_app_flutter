@@ -6,7 +6,8 @@ class SearchDropdown extends StatefulWidget {
   final String hintText;
   final String displayKey;
   final String valueKey;
-  final String? initialValue; // New parameter for initial value
+  final String? initialValue; // Initial value (ID)
+  final String? initialDisplayText; // Initial display text
   final Function(Map<String, dynamic>) onItemSelected;
 
   const SearchDropdown({
@@ -15,7 +16,8 @@ class SearchDropdown extends StatefulWidget {
     required this.hintText,
     required this.displayKey,
     required this.valueKey,
-    this.initialValue, // New parameter
+    this.initialValue, // Initial value (ID)
+    this.initialDisplayText, // Initial display text
     required this.onItemSelected,
   }) : super(key: key);
 
@@ -28,17 +30,15 @@ class _SearchDropdownState extends State<SearchDropdown> {
   final FocusNode _focusNode = FocusNode(); // 👈 focus control
   List<dynamic> _results = [];
   bool _isLoading = false;
-  String? _initialDisplayText; // To store the display text for initial value
-  bool _initialValueLoaded =
-      false; // To track if we've loaded the initial value
 
   @override
   void initState() {
     super.initState();
 
-    // Load initial display text if initial value is provided
-    if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
-      _loadInitialDisplayText();
+    // Set initial display text if provided
+    if (widget.initialDisplayText != null &&
+        widget.initialDisplayText!.isNotEmpty) {
+      _controller.text = widget.initialDisplayText!;
     }
 
     // Focus आलं की रिकामं असलं तरी default records घे
@@ -49,40 +49,7 @@ class _SearchDropdownState extends State<SearchDropdown> {
     });
   }
 
-  // Method to load display text for initial value
-  Future<void> _loadInitialDisplayText() async {
-    setState(() => _isLoading = true);
-
-    try {
-      // Fetch the item by its ID/value
-      final response = await ApiHelper.request(
-        '${widget.apiUrl}?${widget.valueKey}=${widget.initialValue}',
-        method: 'GET',
-      );
-
-      if (response != null && response is List && response.isNotEmpty) {
-        final item = response[0] as Map<String, dynamic>;
-        setState(() {
-          _initialDisplayText = item[widget.displayKey]?.toString() ?? "";
-          _controller.text = _initialDisplayText!;
-          _initialValueLoaded = true;
-        });
-      }
-    } catch (e) {
-      debugPrint("SearchDropdown initial value error: $e");
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
   Future<void> _search(String query) async {
-    // Clear initial display text when user starts typing
-    if (_initialValueLoaded && query.isNotEmpty) {
-      setState(() {
-        _initialValueLoaded = false;
-      });
-    }
-
     setState(() => _isLoading = true);
 
     try {
@@ -169,7 +136,6 @@ class _SearchDropdownState extends State<SearchDropdown> {
                         item[widget.displayKey]?.toString() ?? "";
                     setState(() {
                       _results = [];
-                      _initialValueLoaded = false; // Clear initial value flag
                     });
                   },
                 );

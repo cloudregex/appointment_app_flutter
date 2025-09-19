@@ -100,6 +100,25 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
     }
   }
 
+  Future<void> _deletePatient(BuildContext context) async {
+    try {
+      await ApiHelper.request(
+        'patients/${widget.patient!['POID']}',
+        method: 'DELETE',
+      );
+      if (context.mounted) {
+        // Pop back to the list screen
+        Navigator.popUntil(context, (route) => route.isFirst);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to delete patient')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,7 +132,7 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {
-                // Add delete functionality
+                _deletePatient(context);
               },
             ),
         ],
@@ -200,6 +219,8 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
                         valueKey: "DrOID",
                         initialValue: widget.patient?['DrOID']
                             ?.toString(), // Pass initial value
+                        initialDisplayText:
+                            widget.patient?['Name'], // Pass doctor's name
                         onItemSelected: (doctor) {
                           setState(() {
                             _drOidController.text = doctor['DrOID'].toString();

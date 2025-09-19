@@ -45,13 +45,16 @@ class _PatientListScreenState extends State<PatientListScreen> {
     });
   }
 
-  void _navigateToDetailsScreen(Map<String, dynamic> patient) {
-    Navigator.push(
+  void _navigateToDetailsScreen(Map<String, dynamic> patient) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PatientDetailsScreen(patient: patient),
       ),
     );
+    setState(() {
+      _patients = _fetchPatients();
+    });
   }
 
   @override

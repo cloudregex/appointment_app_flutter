@@ -10,7 +10,8 @@ class PatientDetailsScreen extends StatelessWidget {
     try {
       await ApiHelper.request('patients/${patient['POID']}', method: 'DELETE');
       if (context.mounted) {
-        Navigator.pop(context);
+        // Pop back to the list screen
+        Navigator.popUntil(context, (route) => route.isFirst);
       }
     } catch (e) {
       if (context.mounted) {
@@ -187,146 +188,15 @@ class PatientDetailsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 // Patient details section with improved cards
-                _buildInfoCard(context, Icons.person, 'Personal Details', [
+                _buildInfoCard(context, Icons.person, 'Details', [
                   _buildInfoRow('Name', patient['Pname']),
                   _buildInfoRow('Gender', patient['Pgender']),
                   _buildInfoRow('Age', '${patient['Page']} years'),
                   _buildInfoRow('Title', patient['Tital']),
+                  _buildInfoRow('Dr.Name', patient['Name'] ?? "N/A"),
+                  _buildInfoRow('Contact', patient['Pcontact']),
+                  _buildInfoRow('Address', patient['Paddress']),
                 ]),
-                const SizedBox(height: 20),
-                _buildInfoCard(
-                  context,
-                  Icons.contact_phone,
-                  'Contact Information',
-                  [
-                    _buildInfoRow('Contact', patient['Pcontact']),
-                    _buildInfoRow('Address', patient['Paddress']),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                _buildInfoCard(
-                  context,
-                  Icons.assignment,
-                  'Medical Information',
-                  [_buildInfoRow('Doctor ID', patient['DrOID']?.toString())],
-                ),
-                const SizedBox(height: 20),
-                // Action buttons - responsive layout
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    if (constraints.maxWidth < 350) {
-                      // Vertical layout for small screens
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              // Add appointment functionality
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 16,
-                              ),
-                              backgroundColor: Theme.of(context).primaryColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'Book Appointment',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          OutlinedButton(
-                            onPressed: () {
-                              // Add edit functionality
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 16,
-                              ),
-                              side: BorderSide(
-                                color: Theme.of(context).primaryColor,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'Edit Patient',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    } else {
-                      // Horizontal layout for larger screens
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          OutlinedButton(
-                            onPressed: () {
-                              // Add edit functionality
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              side: BorderSide(
-                                color: Theme.of(context).primaryColor,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'Edit Patient',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              // Add appointment functionality
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              backgroundColor: Theme.of(context).primaryColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'Book Appointment',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-                  },
-                ),
               ],
             ),
           );
