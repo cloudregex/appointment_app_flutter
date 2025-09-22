@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './appointment/list_appointment.dart';
 import './patient/patient_list_screen.dart';
 import './profile_page.dart';
 
@@ -15,7 +16,8 @@ class _HomePageState extends State<HomePage> {
   // Define the screens for the bottom navigation
   final List<Widget> _screens = [
     const HomeScreen(), // Welcome screen
-    const PatientListScreen(), // Appointment screen
+    const AppointmentListScreen(), // Appointments screen
+    const PatientListScreen(), // Patient screen
     const ProfileScreen(), // Profile screen
   ];
 
@@ -49,7 +51,11 @@ class _HomePageState extends State<HomePage> {
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
             BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today),
-              label: 'Appointment',
+              label: 'Appointments',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Patients',
             ),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ],
@@ -160,7 +166,7 @@ class HomeScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const PatientListScreen(),
+                            builder: (context) => const AppointmentListScreen(),
                           ),
                         );
                       },
