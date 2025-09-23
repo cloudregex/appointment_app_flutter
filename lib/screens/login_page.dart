@@ -12,9 +12,9 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _dbNameController = TextEditingController(text: 'appointmentapp');
-  final _dbUsernameController = TextEditingController(text: 'appointmentapp');
-  final _dbPasswordController = TextEditingController(text: 'appointmentapp');
+  final _dbNameController = TextEditingController();
+  final _dbUsernameController = TextEditingController();
+  final _dbPasswordController = TextEditingController();
   bool _isLoading = false;
   String _errorMessage = '';
 
@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
           'tenant/login',
           method: 'POST',
           body: {
-            'db_host': '127.0.0.1',
+            'db_host': '103.86.177.211',
             'db_port': '3306',
             'db_name': _dbNameController.text,
             'db_username': _dbUsernameController.text,
