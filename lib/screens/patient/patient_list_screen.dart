@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../helper/api_helper.dart';
 import './add_edit_patient_screen.dart';
 import './patient_details_screen.dart';
@@ -11,24 +12,53 @@ class PatientListScreen extends StatefulWidget {
 }
 
 class _PatientListScreenState extends State<PatientListScreen> {
-  late Future<List<dynamic>> _patients;
+  late Future<Map<String, dynamic>> _patientsData;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+  int _currentPage = 1;
 
   @override
   void initState() {
     super.initState();
-    _patients = _fetchPatients();
+    _patientsData = _fetchPatients();
   }
 
-  Future<List<dynamic>> _fetchPatients() async {
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  Future<Map<String, dynamic>> _fetchPatients({
+    String? search,
+    int page = 1,
+  }) async {
     try {
-      final response = await ApiHelper.request('patients');
-      if (response != null && response['data'] != null) {
-        return response['data'] as List<dynamic>;
+      String endpoint = 'patients?page=$page';
+      if (search != null && search.isNotEmpty) {
+        endpoint += '&search=$search';
+      }
+
+      final response = await ApiHelper.request(endpoint);
+      if (response != null) {
+        return {
+          'data': response['data'] as List<dynamic> ?? [],
+          'current_page': response['current_page'] ?? 1,
+          'last_page': response['last_page'] ?? 1,
+          'per_page': response['per_page'] ?? 20,
+          'total': response['total'] ?? 0,
+        };
       } else {
-        return [];
+        return {
+          'data': [],
+          'current_page': 1,
+          'last_page': 1,
+          'per_page': 20,
+          'total': 0,
+        };
       }
     } catch (e) {
-      print(e);
       throw Exception('Failed to load patients');
     }
   }
@@ -41,7 +71,10 @@ class _PatientListScreenState extends State<PatientListScreen> {
       ),
     );
     setState(() {
-      _patients = _fetchPatients();
+      _patientsData = _fetchPatients(
+        search: _searchController.text,
+        page: _currentPage,
+      );
     });
   }
 
@@ -53,7 +86,10 @@ class _PatientListScreenState extends State<PatientListScreen> {
       ),
     );
     setState(() {
-      _patients = _fetchPatients();
+      _patientsData = _fetchPatients(
+        search: _searchController.text,
+        page: _currentPage,
+      );
     });
   }
 
@@ -65,9 +101,46 @@ class _PatientListScreenState extends State<PatientListScreen> {
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => _navigateToAddEditScreen(),
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight + 5),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search patients...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.9),
+              ),
+              onChanged: (value) {
+                if (_debounce?.isActive ?? false) _debounce?.cancel();
+                _debounce = Timer(const Duration(milliseconds: 500), () {
+                  setState(() {
+                    _currentPage = 1;
+                    _patientsData = _fetchPatients(
+                      search: value,
+                      page: _currentPage,
+                    );
+                  });
+                });
+              },
+            ),
+          ),
+        ),
       ),
-      body: FutureBuilder<List<dynamic>>(
-        future: _patients,
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _patientsData,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -87,7 +160,10 @@ class _PatientListScreenState extends State<PatientListScreen> {
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _patients = _fetchPatients();
+                        _patientsData = _fetchPatients(
+                          search: _searchController.text,
+                          page: _currentPage,
+                        );
                       });
                     },
                     child: const Text('Retry'),
@@ -95,7 +171,9 @@ class _PatientListScreenState extends State<PatientListScreen> {
                 ],
               ),
             );
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (!snapshot.hasData ||
+              snapshot.data!['data'] == null ||
+              (snapshot.data!['data'] as List).isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -115,29 +193,74 @@ class _PatientListScreenState extends State<PatientListScreen> {
               ),
             );
           } else {
+            final patients = snapshot.data!['data'] as List;
+            final currentPage = snapshot.data!['current_page'] as int;
+            final lastPage = snapshot.data!['last_page'] as int;
+
             return RefreshIndicator(
               onRefresh: () async {
                 setState(() {
-                  _patients = _fetchPatients();
+                  _patientsData = _fetchPatients(
+                    search: _searchController.text,
+                    page: _currentPage,
+                  );
                 });
               },
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16.0),
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  final patient = snapshot.data![index];
-                  return _buildPatientCard(patient);
-                },
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(4.0),
+                      itemCount: patients.length,
+                      itemBuilder: (context, index) {
+                        final patient = patients[index];
+                        return _buildPatientCard(patient);
+                      },
+                    ),
+                  ),
+                  if (lastPage > 1)
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed: currentPage > 1
+                                ? () {
+                                    setState(() {
+                                      _currentPage = currentPage - 1;
+                                      _patientsData = _fetchPatients(
+                                        search: _searchController.text,
+                                        page: _currentPage,
+                                      );
+                                    });
+                                  }
+                                : null,
+                            child: const Text('Previous'),
+                          ),
+                          Text('Page $currentPage of $lastPage'),
+                          ElevatedButton(
+                            onPressed: currentPage < lastPage
+                                ? () {
+                                    setState(() {
+                                      _currentPage = currentPage + 1;
+                                      _patientsData = _fetchPatients(
+                                        search: _searchController.text,
+                                        page: _currentPage,
+                                      );
+                                    });
+                                  }
+                                : null,
+                            child: const Text('Next'),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             );
           }
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToAddEditScreen(),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add),
       ),
     );
   }

@@ -59,7 +59,6 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
         'DROID': _droidController.text,
         'DrName': _doctorName,
       };
-      print(appointmentData);
       try {
         await ApiHelper.request(
           'appointments',
@@ -70,7 +69,6 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
           Navigator.pop(context);
         }
       } catch (e) {
-        print(e);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to save appointment')),

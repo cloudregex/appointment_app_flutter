@@ -1,6 +1,7 @@
 import 'package:appointment_app/screens/utils/search_dropdown.dart';
 import 'package:flutter/material.dart';
 import '../../helper/api_helper.dart';
+import '../../helper/token_manager.dart';
 import '../utils/prefix_name_field.dart';
 
 class AddEditPatientScreen extends StatefulWidget {
@@ -62,6 +63,9 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
 
   Future<void> _savePatient() async {
     if (_formKey.currentState!.validate()) {
+      // Get the hospital prefix from shared preferences
+      final hospitalPrefix = await TokenManager.getHospitalPrefix() ?? '';
+
       // Get the full name from the PrefixNameField
       final patientData = {
         'Pname': _pNameController.text,
@@ -71,6 +75,7 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
         'Page': _pAgeController.text,
         'DrOID': _drOidController.text,
         'Tital': _titleController.text,
+        'HospitalPrefix': hospitalPrefix, // Add hospital prefix to patient data
       };
       try {
         if (widget.patient == null) {
@@ -91,7 +96,6 @@ class _AddEditPatientScreenState extends State<AddEditPatientScreen> {
         }
       } catch (e) {
         if (context.mounted) {
-          print(e);
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text('Failed to save patient')));

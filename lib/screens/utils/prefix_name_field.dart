@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:appointment_app/helper/api_helper.dart';
+import 'dart:async';
 
 class PrefixNameField extends StatefulWidget {
   final List<String> prefixes;
@@ -24,6 +26,10 @@ class PrefixNameField extends StatefulWidget {
 
 class _PrefixNameFieldState extends State<PrefixNameField> {
   String? _selectedPrefix;
+  List<dynamic> _patientResults = [];
+  bool _isLoading = false;
+  bool _showSuggestions = false;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -44,49 +50,149 @@ class _PrefixNameFieldState extends State<PrefixNameField> {
   }
 
   @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _searchPatients(String query) async {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      if (query.isEmpty) {
+        setState(() {
+          _patientResults = [];
+          _showSuggestions = false;
+        });
+        return;
+      }
+
+      setState(() => _isLoading = true);
+
+      try {
+        final response = await ApiHelper.request(
+          'patients?search=$query',
+          method: 'GET',
+        );
+
+        if (response != null && response['data'] is List) {
+          setState(() {
+            _patientResults = response['data'] as List;
+            _showSuggestions = _patientResults.isNotEmpty;
+            print('Found ${_patientResults.length} patients');
+          });
+        } else {
+          setState(() {
+            _patientResults = [];
+            _showSuggestions = false;
+          });
+        }
+      } catch (e) {
+        print("PrefixNameField patient search error: $e");
+        setState(() {
+          _patientResults = [];
+          _showSuggestions = false;
+        });
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.nameController,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(
-            color: Theme.of(context).primaryColor,
-            width: 2,
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Stack(
+          children: [
+            TextFormField(
+              controller: widget.nameController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).primaryColor,
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: Colors.grey[50],
+                prefixIcon: DropdownButtonHideUnderline(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: DropdownButton<String>(
+                      value:
+                          (widget.prefixes.contains(_selectedPrefix) &&
+                              _selectedPrefix != null &&
+                              _selectedPrefix!.isNotEmpty)
+                          ? _selectedPrefix
+                          : null,
+                      hint: const Text("Prefix"),
+                      items: widget.prefixes
+                          .map(
+                            (e) => DropdownMenuItem<String>(
+                              value: e,
+                              child: Text(e),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedPrefix = value;
+                          widget.prefixController.text =
+                              value ?? ""; // ✅ Correct assignment
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                hintText: widget.hintText,
+              ),
+              validator: widget.validator,
+              onChanged: _searchPatients,
+            ),
+          ],
         ),
-        filled: true,
-        fillColor: Colors.grey[50],
-        prefixIcon: DropdownButtonHideUnderline(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: DropdownButton<String>(
-              value:
-                  (widget.prefixes.contains(_selectedPrefix) &&
-                      _selectedPrefix != null &&
-                      _selectedPrefix!.isNotEmpty)
-                  ? _selectedPrefix
-                  : null,
-              hint: const Text("Prefix"),
-              items: widget.prefixes
-                  .map(
-                    (e) => DropdownMenuItem<String>(value: e, child: Text(e)),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedPrefix = value;
-                  widget.prefixController.text =
-                      value ?? ""; // ✅ Correct assignment
-                });
+        if (_showSuggestions && _patientResults.isNotEmpty)
+          Container(
+            constraints: const BoxConstraints(maxHeight: 200),
+            margin: const EdgeInsets.only(top: 5),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              itemCount: _patientResults.length,
+              itemBuilder: (context, index) {
+                final patient = _patientResults[index] as Map<String, dynamic>;
+                return ListTile(
+                  title: Text(patient['Pname']?.toString() ?? ""),
+                  subtitle: Text(patient['Paddress']?.toString() ?? ""),
+                  onTap: () {
+                    widget.nameController.text =
+                        patient['Pname']?.toString() ?? "";
+                    setState(() {
+                      _showSuggestions = false;
+                      _patientResults = [];
+                    });
+                  },
+                );
               },
             ),
           ),
-        ),
-        hintText: widget.hintText,
-      ),
-      validator: widget.validator,
+      ],
     );
   }
 }

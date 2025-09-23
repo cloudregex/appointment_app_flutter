@@ -15,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final _dbNameController = TextEditingController();
   final _dbUsernameController = TextEditingController();
   final _dbPasswordController = TextEditingController();
+  final _hospitalPrefixController = TextEditingController();
   bool _isLoading = false;
   String _errorMessage = '';
 
@@ -39,6 +40,7 @@ class _LoginPageState extends State<LoginPage> {
 
         final token = data['token'];
         await TokenManager.saveToken(token);
+        await TokenManager.saveHospitalPrefix(_hospitalPrefixController.text);
         ApiHelper.authToken = token;
 
         if (!mounted) return;
@@ -64,6 +66,7 @@ class _LoginPageState extends State<LoginPage> {
     _dbNameController.dispose();
     _dbUsernameController.dispose();
     _dbPasswordController.dispose();
+    _hospitalPrefixController.dispose();
     super.dispose();
   }
 
@@ -141,6 +144,21 @@ class _LoginPageState extends State<LoginPage> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter database username';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: _hospitalPrefixController,
+                          decoration: const InputDecoration(
+                            labelText: 'Hospital Name Prefix',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.local_hospital),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter hospital name prefix';
                             }
                             return null;
                           },

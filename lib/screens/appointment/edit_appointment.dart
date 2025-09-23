@@ -91,7 +91,6 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
         }
       } catch (e) {
         if (context.mounted) {
-          print(e);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to save appointment')),
           );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 import '../../helper/api_helper.dart';
 import './add_appointment.dart';
 import './edit_appointment.dart';
@@ -13,24 +14,53 @@ class AppointmentListScreen extends StatefulWidget {
 }
 
 class _AppointmentListScreenState extends State<AppointmentListScreen> {
-  late Future<List<dynamic>> _appointments;
+  late Future<Map<String, dynamic>> _appointmentsData;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+  int _currentPage = 1;
 
   @override
   void initState() {
     super.initState();
-    _appointments = _fetchAppointments();
+    _appointmentsData = _fetchAppointments();
   }
 
-  Future<List<dynamic>> _fetchAppointments() async {
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  Future<Map<String, dynamic>> _fetchAppointments({
+    String? search,
+    int page = 1,
+  }) async {
     try {
-      final response = await ApiHelper.request('appointments');
-      if (response != null && response['data'] != null) {
-        return response['data'] as List<dynamic>;
+      String endpoint = 'appointments?page=$page';
+      if (search != null && search.isNotEmpty) {
+        endpoint += '&search=$search';
+      }
+
+      final response = await ApiHelper.request(endpoint);
+      if (response != null) {
+        return {
+          'data': response['data'] as List<dynamic> ?? [],
+          'current_page': response['current_page'] ?? 1,
+          'last_page': response['last_page'] ?? 1,
+          'per_page': response['per_page'] ?? 20,
+          'total': response['total'] ?? 0,
+        };
       } else {
-        return [];
+        return {
+          'data': [],
+          'current_page': 1,
+          'last_page': 1,
+          'per_page': 20,
+          'total': 0,
+        };
       }
     } catch (e) {
-      print(e);
       throw Exception('Failed to load appointments');
     }
   }
@@ -41,7 +71,10 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
       MaterialPageRoute(builder: (context) => const AddAppointmentScreen()),
     );
     setState(() {
-      _appointments = _fetchAppointments();
+      _appointmentsData = _fetchAppointments(
+        search: _searchController.text,
+        page: _currentPage,
+      );
     });
   }
 
@@ -55,7 +88,10 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
       ),
     );
     setState(() {
-      _appointments = _fetchAppointments();
+      _appointmentsData = _fetchAppointments(
+        search: _searchController.text,
+        page: _currentPage,
+      );
     });
   }
 
@@ -69,7 +105,10 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
       ),
     );
     setState(() {
-      _appointments = _fetchAppointments();
+      _appointmentsData = _fetchAppointments(
+        search: _searchController.text,
+        page: _currentPage,
+      );
     });
   }
 
@@ -92,9 +131,46 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _navigateToAddAppointmentScreen,
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight + 5),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search appointments...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.9),
+              ),
+              onChanged: (value) {
+                if (_debounce?.isActive ?? false) _debounce?.cancel();
+                _debounce = Timer(const Duration(milliseconds: 500), () {
+                  setState(() {
+                    _currentPage = 1;
+                    _appointmentsData = _fetchAppointments(
+                      search: value,
+                      page: _currentPage,
+                    );
+                  });
+                });
+              },
+            ),
+          ),
+        ),
       ),
-      body: FutureBuilder<List<dynamic>>(
-        future: _appointments,
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _appointmentsData,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -114,7 +190,10 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _appointments = _fetchAppointments();
+                        _appointmentsData = _fetchAppointments(
+                          search: _searchController.text,
+                          page: _currentPage,
+                        );
                       });
                     },
                     child: const Text('Retry'),
@@ -122,7 +201,9 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                 ],
               ),
             );
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (!snapshot.hasData ||
+              snapshot.data!['data'] == null ||
+              (snapshot.data!['data'] as List).isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -142,29 +223,74 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
               ),
             );
           } else {
+            final appointments = snapshot.data!['data'] as List;
+            final currentPage = snapshot.data!['current_page'] as int;
+            final lastPage = snapshot.data!['last_page'] as int;
+
             return RefreshIndicator(
               onRefresh: () async {
                 setState(() {
-                  _appointments = _fetchAppointments();
+                  _appointmentsData = _fetchAppointments(
+                    search: _searchController.text,
+                    page: _currentPage,
+                  );
                 });
               },
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16.0),
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  final appointment = snapshot.data![index];
-                  return _buildAppointmentCard(appointment);
-                },
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(4.0),
+                      itemCount: appointments.length,
+                      itemBuilder: (context, index) {
+                        final appointment = appointments[index];
+                        return _buildAppointmentCard(appointment);
+                      },
+                    ),
+                  ),
+                  if (lastPage > 1)
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed: currentPage > 1
+                                ? () {
+                                    setState(() {
+                                      _currentPage = currentPage - 1;
+                                      _appointmentsData = _fetchAppointments(
+                                        search: _searchController.text,
+                                        page: _currentPage,
+                                      );
+                                    });
+                                  }
+                                : null,
+                            child: const Text('Previous'),
+                          ),
+                          Text('Page $currentPage of $lastPage'),
+                          ElevatedButton(
+                            onPressed: currentPage < lastPage
+                                ? () {
+                                    setState(() {
+                                      _currentPage = currentPage + 1;
+                                      _appointmentsData = _fetchAppointments(
+                                        search: _searchController.text,
+                                        page: _currentPage,
+                                      );
+                                    });
+                                  }
+                                : null,
+                            child: const Text('Next'),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             );
           }
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddAppointmentScreen,
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add),
       ),
     );
   }
