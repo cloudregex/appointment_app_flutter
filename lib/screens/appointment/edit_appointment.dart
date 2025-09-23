@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../helper/api_helper.dart';
 import '../utils/search_dropdown.dart';
 
@@ -9,6 +10,17 @@ class EditAppointmentScreen extends StatefulWidget {
 
   @override
   _EditAppointmentScreenState createState() => _EditAppointmentScreenState();
+}
+
+/// ✅ Date formatter: show only dd-MM-yyyy
+String _formatDate(String? rawDate) {
+  if (rawDate == null || rawDate.isEmpty) return '';
+  try {
+    final parsed = DateTime.parse(rawDate);
+    return DateFormat('dd-MM-yyyy').format(parsed); // only date
+  } catch (e) {
+    return rawDate; // fallback
+  }
 }
 
 class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
@@ -24,13 +36,19 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
   void initState() {
     super.initState();
     _dateController = TextEditingController(
-      text: widget.appointment?['Date'] ?? '',
+      text: _formatDate(widget.appointment?['Date']),
     );
-    _poidController = TextEditingController();
+    _poidController = TextEditingController(
+      text: widget.appointment?['POID']?.toString() ?? '',
+    );
     _contactController = TextEditingController(
       text: widget.appointment?['Contact'] ?? '',
     );
-    _droidController = TextEditingController();
+    _droidController = TextEditingController(
+      text: widget.appointment?['DROID']?.toString() ?? '',
+    );
+    _patientName = widget.appointment?['Name']?.toString() ?? '';
+    _doctorName = widget.appointment?['DrName']?.toString() ?? '';
   }
 
   @override
@@ -62,7 +80,7 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
           );
         } else {
           await ApiHelper.request(
-            'appointments/${widget.appointment!['id']}',
+            'appointments/${widget.appointment!['APPOID']}',
             method: 'PUT',
             body: appointmentData,
           );
@@ -85,7 +103,7 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
   Future<void> _deleteAppointment(BuildContext context) async {
     try {
       await ApiHelper.request(
-        'appointments/${widget.appointment!['id']}',
+        'appointments/${widget.appointment!['APPOID']}',
         method: 'DELETE',
       );
       if (context.mounted) {
@@ -149,7 +167,7 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
                       valueKey: "POID",
                       initialValue: widget.appointment?['POID']?.toString(),
                       initialDisplayText: widget
-                          .appointment?['PatientName'], // Assuming this field exists
+                          .appointment?['Name'], // Assuming this field exists
                       onItemSelected: (patient) {
                         setState(() {
                           _poidController.text = patient['POID'].toString();
@@ -176,7 +194,7 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
                       valueKey: "DrOID",
                       initialValue: widget.appointment?['DrOID']?.toString(),
                       initialDisplayText: widget
-                          .appointment?['DoctorName'], // Assuming this field exists
+                          .appointment?['DrName'], // Assuming this field exists
                       onItemSelected: (doctor) {
                         setState(() {
                           _droidController.text = doctor['DrOID'].toString();
@@ -312,8 +330,7 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
 
           if (pickedDate != null) {
             setState(() {
-              _dateController.text =
-                  "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+              _dateController.text = _formatDate(pickedDate.toIso8601String());
             });
           }
         },

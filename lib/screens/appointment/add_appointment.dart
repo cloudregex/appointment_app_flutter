@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../helper/api_helper.dart';
 import '../utils/search_dropdown.dart';
 
@@ -16,6 +17,18 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
   late TextEditingController _contactController;
   late TextEditingController _droidController;
   String _patientName = '';
+
+  /// ✅ Date formatter: show only dd-MM-yyyy
+  String _formatDate(String? rawDate) {
+    if (rawDate == null || rawDate.isEmpty) return '';
+    try {
+      final parsed = DateTime.parse(rawDate);
+      return DateFormat('dd-MM-yyyy').format(parsed); // only date
+    } catch (e) {
+      return rawDate; // fallback
+    }
+  }
+
   String _doctorName = '';
 
   @override
@@ -46,17 +59,18 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
         'DROID': _droidController.text,
         'DrName': _doctorName,
       };
+      print(appointmentData);
       try {
         await ApiHelper.request(
           'appointments',
           method: 'POST',
           body: appointmentData,
         );
-
         if (context.mounted) {
           Navigator.pop(context);
         }
       } catch (e) {
+        print(e);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to save appointment')),
@@ -262,8 +276,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
 
           if (pickedDate != null) {
             setState(() {
-              _dateController.text =
-                  "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+              _dateController.text = _formatDate(pickedDate.toIso8601String());
             });
           }
         },

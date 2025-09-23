@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../helper/api_helper.dart';
 import './add_appointment.dart';
+import './edit_appointment.dart';
 import './view_appointment.dart';
 
 class AppointmentListScreen extends StatefulWidget {
@@ -43,6 +45,20 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
     });
   }
 
+  void _navigateToEditAppointmentScreen(
+    Map<String, dynamic> appointment,
+  ) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditAppointmentScreen(appointment: appointment),
+      ),
+    );
+    setState(() {
+      _appointments = _fetchAppointments();
+    });
+  }
+
   void _navigateToViewAppointmentScreen(
     Map<String, dynamic> appointment,
   ) async {
@@ -55,6 +71,17 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
     setState(() {
       _appointments = _fetchAppointments();
     });
+  }
+
+  /// ✅ Date formatter: show only dd-MM-yyyy
+  String _formatDate(String? rawDate) {
+    if (rawDate == null || rawDate.isEmpty) return 'Unknown Date';
+    try {
+      final parsed = DateTime.parse(rawDate);
+      return DateFormat('dd-MM-yyyy').format(parsed); // only date
+    } catch (e) {
+      return rawDate; // fallback
+    }
   }
 
   @override
@@ -76,7 +103,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, color: Colors.red[30], size: 48),
+                  Icon(Icons.error_outline, color: Colors.red[300], size: 48),
                   const SizedBox(height: 16),
                   Text(
                     'Error: ${snapshot.error}',
@@ -160,16 +187,16 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Theme.of(context).primaryColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
                             color: Theme.of(
                               context,
                             ).primaryColor.withOpacity(0.2),
-                            blurRadius: 8,
+                            blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
                         ],
@@ -177,38 +204,51 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                       child: Icon(
                         Icons.calendar_month,
                         color: Theme.of(context).primaryColor,
-                        size: 32,
+                        size: 28,
                       ),
                     ),
-                    const SizedBox(width: 20),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            appointment['Date'] ?? 'Unknown Date',
+                            _formatDate(appointment['Date']), // ✅ formatted
                             style: const TextStyle(
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.deepPurple,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
                           Text(
-                            'POID: ${appointment['POID'] ?? 'N/A'}',
+                            'Appointment No: ${appointment['APPID'] ?? 'N/A'}',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               color: Colors.grey[600],
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).primaryColor,
+                        size: 24,
+                      ),
+                      onPressed: () =>
+                          _navigateToEditAppointmentScreen(appointment),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                // Appointment details with improved info chips
-                Row(
+                // Appointment details with improved info chips (WRAP instead of ROW)
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
                   children: [
                     _buildInfoChip(
                       Icons.phone,
@@ -216,12 +256,17 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                       context,
                       Colors.green,
                     ),
-                    const SizedBox(width: 16),
                     _buildInfoChip(
-                      Icons.medical_information,
-                      'DROID: ${appointment['DROID'] ?? 'N/A'}',
+                      Icons.person,
+                      appointment['Name'] ?? 'N/A',
                       context,
-                      Colors.purple,
+                      Colors.blue,
+                    ),
+                    _buildInfoChip(
+                      Icons.local_hospital,
+                      appointment['DrName'] ?? 'N/A',
+                      context,
+                      Colors.deepPurple,
                     ),
                   ],
                 ),
@@ -245,6 +290,30 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                       ),
                       child: const Text(
                         'View Details',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () =>
+                          _navigateToEditAppointmentScreen(appointment),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: const Text(
+                        'Edit',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,

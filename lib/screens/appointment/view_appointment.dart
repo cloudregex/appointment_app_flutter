@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../helper/api_helper.dart';
 
 class ViewAppointmentScreen extends StatelessWidget {
@@ -6,10 +7,21 @@ class ViewAppointmentScreen extends StatelessWidget {
 
   const ViewAppointmentScreen({super.key, required this.appointment});
 
+  /// ✅ Date formatter: show only dd-MM-yyyy
+  String _formatDate(String? rawDate) {
+    if (rawDate == null || rawDate.isEmpty) return 'Unknown Date';
+    try {
+      final parsed = DateTime.parse(rawDate);
+      return DateFormat('dd-MM-yyyy').format(parsed); // only date
+    } catch (e) {
+      return rawDate; // fallback
+    }
+  }
+
   Future<void> _deleteAppointment(BuildContext context) async {
     try {
       await ApiHelper.request(
-        'appointments/${appointment['id']}',
+        'appointments/${appointment['APPOID']}',
         method: 'DELETE',
       );
       if (context.mounted) {
@@ -76,61 +88,63 @@ class ViewAppointmentScreen extends StatelessWidget {
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.all(24.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Theme.of(
                             context,
                           ).primaryColor.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
                               color: Theme.of(
                                 context,
                               ).primaryColor.withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
                         child: Icon(
                           Icons.calendar_month,
                           color: Theme.of(context).primaryColor,
-                          size: 40,
+                          size: 28,
                         ),
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              appointment['Date'] ?? 'Unknown Date',
+                              _formatDate(appointment['Date']),
                               style: const TextStyle(
-                                fontSize: 28,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.deepPurple,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 4),
                             Text(
-                              'POID: ${appointment['POID'] ?? 'N/A'}',
+                              'Appointment No: ${appointment['APPID'] ?? 'N/A'}',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 14,
                                 color: Colors.grey[600],
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
@@ -141,10 +155,10 @@ class ViewAppointmentScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 // Appointment details section
                 _buildInfoCard(context, Icons.info, 'Details', [
-                  _buildInfoRow('Date', appointment['Date']),
-                  _buildInfoRow('POID', appointment['POID']?.toString()),
+                  _buildInfoRow('Date', _formatDate(appointment['Date'])),
                   _buildInfoRow('Contact', appointment['Contact']),
-                  _buildInfoRow('DROID', appointment['DROID']?.toString()),
+                  _buildInfoRow('Patient Name', appointment['Name']),
+                  _buildInfoRow('Doctor Name', appointment['DrName']),
                 ]),
               ],
             ),
