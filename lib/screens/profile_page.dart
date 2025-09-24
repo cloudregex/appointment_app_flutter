@@ -92,16 +92,68 @@ class ProfileScreen extends StatelessWidget {
                       style: TextStyle(color: Colors.red),
                     ),
                     onTap: () async {
-                      // Logout functionality
-                      await TokenManager.clearToken();
-                      ApiHelper.authToken = null;
-                      if (!context.mounted) return;
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginPage(),
-                        ),
+                      // Show password confirmation dialog before logout
+                      final passwordController = TextEditingController();
+                      final result = await showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Confirm Logout'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('Please enter password to logout:'),
+                                const SizedBox(height: 10),
+                                TextField(
+                                  controller: passwordController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Password',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  obscureText: true,
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(false);
+                                },
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  if (passwordController.text == '2558') {
+                                    Navigator.of(context).pop(true);
+                                  } else {
+                                    // Show error message if password is incorrect
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Incorrect password'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Text('Confirm'),
+                              ),
+                            ],
+                          );
+                        },
                       );
+
+                      // Only proceed with logout if password was correct
+                      if (result == true) {
+                        await TokenManager.clearToken();
+                        ApiHelper.authToken = null;
+                        if (!context.mounted) return;
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginPage(),
+                          ),
+                        );
+                      }
                     },
                   ),
                 ],

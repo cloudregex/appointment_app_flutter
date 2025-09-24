@@ -18,11 +18,18 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   int _currentPage = 1;
+  DateTime? _startDate;
+  DateTime? _endDate;
 
   @override
   void initState() {
     super.initState();
-    _appointmentsData = _fetchAppointments();
+    _appointmentsData = _fetchAppointments(
+      search: _searchController.text,
+      page: _currentPage,
+      startDate: DateTime.now(),
+      endDate: DateTime.now(),
+    );
   }
 
   @override
@@ -35,11 +42,19 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
   Future<Map<String, dynamic>> _fetchAppointments({
     String? search,
     int page = 1,
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
     try {
       String endpoint = 'appointments?page=$page';
       if (search != null && search.isNotEmpty) {
         endpoint += '&search=$search';
+      }
+      if (startDate != null) {
+        endpoint += '&start_date=${DateFormat('yyyy-MM-dd').format(startDate)}';
+      }
+      if (endDate != null) {
+        endpoint += '&end_date=${DateFormat('yyyy-MM-dd').format(endDate)}';
       }
 
       final response = await ApiHelper.request(endpoint);
@@ -74,6 +89,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
       _appointmentsData = _fetchAppointments(
         search: _searchController.text,
         page: _currentPage,
+        startDate: _startDate,
+        endDate: _endDate,
       );
     });
   }
@@ -91,6 +108,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
       _appointmentsData = _fetchAppointments(
         search: _searchController.text,
         page: _currentPage,
+        startDate: _startDate,
+        endDate: _endDate,
       );
     });
   }
@@ -108,19 +127,174 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
       _appointmentsData = _fetchAppointments(
         search: _searchController.text,
         page: _currentPage,
+        startDate: _startDate,
+        endDate: _endDate,
       );
     });
   }
 
+  void _showDateFilterBottomSheet() {
+    DateTime? selectedStartDate = _startDate;
+    DateTime? selectedEndDate = _endDate;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Filter by Date',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ListTile(
+                      leading: const Icon(Icons.calendar_today),
+                      title: const Text('Start Date'),
+                      subtitle: Text(
+                        selectedStartDate != null
+                            ? DateFormat(
+                                'dd-MM-yyyy',
+                              ).format(selectedStartDate!)
+                            : 'Select date',
+                      ),
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedStartDate ?? DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2101),
+                        );
+                        if (picked != null) {
+                          setModalState(() {
+                            selectedStartDate = picked;
+                          });
+                        }
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.calendar_today),
+                      title: const Text('End Date'),
+                      subtitle: Text(
+                        selectedEndDate != null
+                            ? DateFormat('dd-MM-yyyy').format(selectedEndDate!)
+                            : 'Select date',
+                      ),
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedEndDate ?? DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2101),
+                        );
+                        if (picked != null) {
+                          setModalState(() {
+                            selectedEndDate = picked;
+                          });
+                        }
+                      },
+                    ),
+                    const Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            // Reset dates to current
+                            setModalState(() {
+                              selectedStartDate = DateTime.now();
+                              selectedEndDate = DateTime.now();
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[300],
+                            foregroundColor: Colors.black87,
+                          ),
+                          child: const Text('Reset'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Validate date range
+                            if (selectedStartDate != null &&
+                                selectedEndDate != null &&
+                                selectedStartDate!.isAfter(selectedEndDate!)) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'End date cannot be before start date',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+
+                            // Apply filter
+                            Navigator.of(context).pop();
+                            setState(() {
+                              _startDate = selectedStartDate;
+                              _endDate = selectedEndDate;
+                              _currentPage = 1;
+                              _appointmentsData = _fetchAppointments(
+                                search: _searchController.text,
+                                page: _currentPage,
+                                startDate: _startDate,
+                                endDate: _endDate,
+                              );
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Apply Filter'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   /// ✅ Date formatter: show only dd-MM-yyyy
-  String _formatDate(String? rawDate) {
-    if (rawDate == null || rawDate.isEmpty) return 'Unknown Date';
-    try {
-      final parsed = DateTime.parse(rawDate);
-      return DateFormat('dd-MM-yyyy').format(parsed); // only date
-    } catch (e) {
-      return rawDate; // fallback
+  String _formatDate(dynamic rawDate) {
+    if (rawDate == null) return 'Unknown Date';
+
+    // Handle string dates
+    if (rawDate is String) {
+      if (rawDate.isEmpty) return 'Unknown Date';
+      try {
+        final parsed = DateTime.parse(rawDate);
+        return DateFormat('dd-MM-yyyy').format(parsed);
+      } catch (_) {
+        return rawDate;
+      }
     }
+
+    // Handle DateTime objects
+    if (rawDate is DateTime) {
+      return DateFormat('dd-MM-yyyy').format(rawDate);
+    }
+
+    // Handle other types (int timestamps, etc.)
+    return rawDate.toString();
   }
 
   @override
@@ -135,6 +309,10 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _navigateToAddAppointmentScreen,
+          ),
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: _showDateFilterBottomSheet,
           ),
         ],
         bottom: PreferredSize(
@@ -161,6 +339,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                     _appointmentsData = _fetchAppointments(
                       search: value,
                       page: _currentPage,
+                      startDate: _startDate,
+                      endDate: _endDate,
                     );
                   });
                 });
@@ -193,6 +373,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                         _appointmentsData = _fetchAppointments(
                           search: _searchController.text,
                           page: _currentPage,
+                          startDate: _startDate,
+                          endDate: _endDate,
                         );
                       });
                     },
@@ -233,6 +415,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                   _appointmentsData = _fetchAppointments(
                     search: _searchController.text,
                     page: _currentPage,
+                    startDate: _startDate,
+                    endDate: _endDate,
                   );
                 });
               },
@@ -262,6 +446,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                                       _appointmentsData = _fetchAppointments(
                                         search: _searchController.text,
                                         page: _currentPage,
+                                        startDate: _startDate,
+                                        endDate: _endDate,
                                       );
                                     });
                                   }
@@ -277,6 +463,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                                       _appointmentsData = _fetchAppointments(
                                         search: _searchController.text,
                                         page: _currentPage,
+                                        startDate: _startDate,
+                                        endDate: _endDate,
                                       );
                                     });
                                   }
@@ -339,7 +527,11 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _formatDate(appointment['Date']), // ✅ formatted
+                            _formatDate(
+                              appointment['date'] ??
+                                  appointment['Date'] ??
+                                  appointment['appointment_date'],
+                            ),
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -349,7 +541,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Appointment No: ${appointment['APPID'] ?? 'N/A'}',
+                            'Appointment No: ${appointment['id'] ?? appointment['APPID'] ?? appointment['appointment_id'] ?? 'N/A'}',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
