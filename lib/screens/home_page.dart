@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import './appointment/list_appointment.dart';
 import './patient/patient_list_screen.dart';
 import './profile_page.dart';
+import './ipd/ipd_list_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -59,6 +60,58 @@ class _HomePageState extends State<HomePage> {
             ),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Small reusable shortcut card used in HomeScreen
+class _ShortcutCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ShortcutCard({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+          padding: const EdgeInsets.all(12.0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 28, color: Colors.deepPurple),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.deepPurple,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -162,7 +215,6 @@ class HomeScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Navigate to appointment screen
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -190,6 +242,50 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 20),
+
+            // Shortcut cards row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _ShortcutCard(
+                  icon: Icons.calendar_today,
+                  label: 'Appointments',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AppointmentListScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _ShortcutCard(
+                  icon: Icons.people,
+                  label: 'Patients',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PatientListScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _ShortcutCard(
+                  icon: Icons.local_hospital,
+                  label: 'IPD',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const IPDListScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ],
         ),
