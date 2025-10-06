@@ -30,7 +30,6 @@ class _EditTPRScreenState extends State<EditTPRScreen> {
   @override
   void initState() {
     super.initState();
-    print(widget.tprRecord);
     // Pre-fill form for editing
     _dateController.text = widget.tprRecord['Date'] ?? '';
     _timeController.text = widget.tprRecord['Time'] ?? '';

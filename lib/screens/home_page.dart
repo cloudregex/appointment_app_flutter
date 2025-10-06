@@ -246,44 +246,66 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Shortcut cards row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
               children: [
-                _ShortcutCard(
-                  icon: Icons.calendar_today,
-                  label: 'Appointments',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AppointmentListScreen(),
-                      ),
-                    );
-                  },
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _ShortcutCard(
+                      icon: Icons.calendar_today,
+                      label: 'Appointments',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AppointmentListScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _ShortcutCard(
+                      icon: Icons.people,
+                      label: 'Patients',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PatientListScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                _ShortcutCard(
-                  icon: Icons.people,
-                  label: 'Patients',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PatientListScreen(),
-                      ),
-                    );
-                  },
-                ),
-                _ShortcutCard(
-                  icon: Icons.local_hospital,
-                  label: 'IPD',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const IPDListScreen(),
-                      ),
-                    );
-                  },
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _ShortcutCard(
+                      icon: Icons.local_hospital,
+                      label: 'IPD',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const IPDListScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _ShortcutCard(
+                      icon: Icons.person_pin,
+                      label: 'Profile',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ProfileScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),

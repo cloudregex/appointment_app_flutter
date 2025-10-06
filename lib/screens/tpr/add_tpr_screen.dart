@@ -89,7 +89,6 @@ class _AddTPRScreenState extends State<AddTPRScreen> {
           );
         }
       } catch (e) {
-        print(e);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to save TPR record')),
