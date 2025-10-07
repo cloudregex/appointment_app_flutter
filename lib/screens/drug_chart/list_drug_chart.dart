@@ -1,19 +1,20 @@
-import 'dart:math';
-import 'package:flutter/material.dart';
-import '../tpr/tpr_list_screen.dart';
-import '../drug_chart/list_drug_chart.dart';
 import 'dart:async';
+import 'package:flutter/material.dart';
 import '../../helper/api_helper.dart';
+import 'add_drug_chart.dart';
+import 'edit_drug_chart.dart';
 
-class IPDListScreen extends StatefulWidget {
-  const IPDListScreen({super.key});
+class DrugChartListScreen extends StatefulWidget {
+  final Map<String, dynamic> patient;
+
+  const DrugChartListScreen({super.key, required this.patient});
 
   @override
-  _IPDListScreenState createState() => _IPDListScreenState();
+  _DrugChartListScreenState createState() => _DrugChartListScreenState();
 }
 
-class _IPDListScreenState extends State<IPDListScreen> {
-  late Future<Map<String, dynamic>> _ipdData;
+class _DrugChartListScreenState extends State<DrugChartListScreen> {
+  late Future<Map<String, dynamic>> _drugData;
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   int _currentPage = 1;
@@ -21,7 +22,7 @@ class _IPDListScreenState extends State<IPDListScreen> {
   @override
   void initState() {
     super.initState();
-    _ipdData = _fetchIPD();
+    _drugData = _fetchDrugs();
   }
 
   @override
@@ -31,9 +32,13 @@ class _IPDListScreenState extends State<IPDListScreen> {
     super.dispose();
   }
 
-  Future<Map<String, dynamic>> _fetchIPD({String? search, int page = 1}) async {
+  Future<Map<String, dynamic>> _fetchDrugs({
+    String? search,
+    int page = 1,
+  }) async {
     try {
-      String endpoint = 'current-ipd?page=$page';
+      String endpoint =
+          'drug-chart?ipdNo=${widget.patient['IPDNO']}&page=$page';
       if (search != null && search.isNotEmpty) {
         endpoint += '&search=$search';
       }
@@ -57,7 +62,7 @@ class _IPDListScreenState extends State<IPDListScreen> {
         };
       }
     } catch (e) {
-      throw Exception('Failed to load IPD records');
+      throw Exception('Failed to load drug records: $e');
     }
   }
 
@@ -65,10 +70,29 @@ class _IPDListScreenState extends State<IPDListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Current IPD'),
+        title: Text('${widget.patient['Name']}'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      AddDrugChartScreen(patient: widget.patient),
+                ),
+              );
+              if (result == true) {
+                setState(() {
+                  _drugData = _fetchDrugs(search: _searchController.text);
+                });
+              }
+            },
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(kToolbarHeight + 5),
           child: Padding(
@@ -76,7 +100,7 @@ class _IPDListScreenState extends State<IPDListScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search IPD records...',
+                hintText: 'Search drugs...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
@@ -90,7 +114,7 @@ class _IPDListScreenState extends State<IPDListScreen> {
                 _debounce = Timer(const Duration(milliseconds: 500), () {
                   setState(() {
                     _currentPage = 1;
-                    _ipdData = _fetchIPD(search: value, page: _currentPage);
+                    _drugData = _fetchDrugs(search: value, page: _currentPage);
                   });
                 });
               },
@@ -99,7 +123,7 @@ class _IPDListScreenState extends State<IPDListScreen> {
         ),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
-        future: _ipdData,
+        future: _drugData,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -119,7 +143,7 @@ class _IPDListScreenState extends State<IPDListScreen> {
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _ipdData = _fetchIPD(
+                        _drugData = _fetchDrugs(
                           search: _searchController.text,
                           page: _currentPage,
                         );
@@ -137,29 +161,33 @@ class _IPDListScreenState extends State<IPDListScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.local_hospital, color: Colors.grey[400], size: 64),
+                  Icon(
+                    Icons.medical_services_outlined,
+                    color: Colors.grey[400],
+                    size: 64,
+                  ),
                   const SizedBox(height: 16),
                   const Text(
-                    'No IPD records found',
+                    'No drug records found',
                     style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Currently no patients are admitted',
+                    'No medications recorded for this patient',
                     style: TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
             );
           } else {
-            final ipdRecords = snapshot.data!['data'] as List;
+            final drugRecords = snapshot.data!['data'] as List;
             final currentPage = snapshot.data!['current_page'] as int;
             final lastPage = snapshot.data!['last_page'] as int;
 
             return RefreshIndicator(
               onRefresh: () async {
                 setState(() {
-                  _ipdData = _fetchIPD(
+                  _drugData = _fetchDrugs(
                     search: _searchController.text,
                     page: _currentPage,
                   );
@@ -170,10 +198,10 @@ class _IPDListScreenState extends State<IPDListScreen> {
                   Expanded(
                     child: ListView.builder(
                       padding: const EdgeInsets.all(4.0),
-                      itemCount: ipdRecords.length,
+                      itemCount: drugRecords.length,
                       itemBuilder: (context, index) {
-                        final ipdRecord = ipdRecords[index];
-                        return _buildIPDCard(ipdRecord);
+                        final drugRecord = drugRecords[index];
+                        return _buildDrugCard(drugRecord);
                       },
                     ),
                   ),
@@ -188,7 +216,7 @@ class _IPDListScreenState extends State<IPDListScreen> {
                                 ? () {
                                     setState(() {
                                       _currentPage = currentPage - 1;
-                                      _ipdData = _fetchIPD(
+                                      _drugData = _fetchDrugs(
                                         search: _searchController.text,
                                         page: _currentPage,
                                       );
@@ -203,7 +231,7 @@ class _IPDListScreenState extends State<IPDListScreen> {
                                 ? () {
                                     setState(() {
                                       _currentPage = currentPage + 1;
-                                      _ipdData = _fetchIPD(
+                                      _drugData = _fetchDrugs(
                                         search: _searchController.text,
                                         page: _currentPage,
                                       );
@@ -221,10 +249,11 @@ class _IPDListScreenState extends State<IPDListScreen> {
           }
         },
       ),
+      // Removed floatingActionButton
     );
   }
 
-  Widget _buildIPDCard(Map<String, dynamic> ipdRecord) {
+  Widget _buildDrugCard(Map<String, dynamic> drugRecord) {
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -236,151 +265,142 @@ class _IPDListScreenState extends State<IPDListScreen> {
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            // Navigate to IPD details screen
+          onTap: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EditDrugChartScreen(
+                  patient: widget.patient,
+                  drugRecord: drugRecord,
+                ),
+              ),
+            );
+            if (result == true) {
+              setState(() {
+                _drugData = _fetchDrugs(search: _searchController.text);
+              });
+            }
           },
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header with avatar and name
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Theme.of(
-                        context,
-                      ).primaryColor.withOpacity(0.1),
-                      child: Icon(
-                        Icons.person_outline,
-                        color: Theme.of(context).primaryColor,
-                        size: 30,
+                    Text(
+                      (drugRecord['Medicine'] ?? 'N/A').toString(),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).textTheme.titleLarge?.color,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            (ipdRecord['Name'] ?? 'Unknown').toString(),
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(
-                                context,
-                              ).textTheme.titleLarge?.color,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
+                    Text(
+                      (drugRecord['Date'] ?? 'N/A').toString().split(' ')[0],
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
                 const Divider(height: 24, thickness: 1),
-                const SizedBox(height: 8),
                 _buildDetailRow(
-                  Icons.confirmation_number_outlined,
-                  'IPD No',
-                  (ipdRecord['IPDNO'] ?? 'N/A').toString(),
+                  Icons.medical_information_outlined,
+                  'Dosage',
+                  (drugRecord['Dosage'] ?? 'N/A').toString(),
                 ),
-                const SizedBox(height: 8),
-                _buildDetailRow(
-                  Icons.date_range_outlined,
-                  'DOA',
-                  (ipdRecord['DOA'] ?? 'N/A').toString(),
-                ),
-                const SizedBox(height: 8),
-                _buildDetailRow(
-                  Icons.king_bed_outlined,
-                  'Room',
-                  (ipdRecord['Room'] ?? 'N/A').toString(),
-                ),
+                // Add more details as needed
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      onPressed: () async {
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                TPRListScreen(patient: ipdRecord),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                        backgroundColor: Theme.of(
-                          context,
-                        ).primaryColor.withOpacity(0.9),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        elevation: 2,
-                      ),
-                      child: const Row(
-                        children: [
-                          Text(
-                            'TPR Details',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                            builder: (context) => EditDrugChartScreen(
+                              patient: widget.patient,
+                              drugRecord: drugRecord,
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward_ios, size: 14),
-                        ],
-                      ),
+                        );
+                        if (result == true) {
+                          setState(() {
+                            _drugData = _fetchDrugs(
+                              search: _searchController.text,
+                            );
+                          });
+                        }
+                      },
                     ),
-                    const SizedBox(
-                      width: 8,
-                    ), // Add some spacing between buttons
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                DrugChartListScreen(patient: ipdRecord),
-                          ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        bool? confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Confirm Deletion'),
+                              content: const Text(
+                                'Are you sure you want to delete this drug record?',
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: const Text('Delete'),
+                                ),
+                              ],
+                            );
+                          },
                         );
+
+                        if (confirm == true) {
+                          try {
+                            final response = await ApiHelper.request(
+                              'drug-chart/${drugRecord['DurgOID']}',
+                              method: 'DELETE',
+                            );
+                            if (response != null &&
+                                response['message'] == 'Drug record deleted') {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Drug record deleted successfully!',
+                                  ),
+                                ),
+                              );
+                              setState(() {
+                                _drugData = _fetchDrugs(
+                                  search: _searchController.text,
+                                );
+                              });
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    response?['message'] ??
+                                        'Failed to delete drug record.',
+                                  ),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $e')),
+                            );
+                          }
+                        }
                       },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                        backgroundColor: Colors.green.withOpacity(
-                          0.9,
-                        ), // Different color for drug chart
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        elevation: 2,
-                      ),
-                      child: const Row(
-                        children: [
-                          Text(
-                            'Drug Chart',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Icon(Icons.medical_services_outlined, size: 14),
-                        ],
-                      ),
                     ),
                   ],
                 ),

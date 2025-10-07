@@ -9,6 +9,7 @@ class SearchDropdown extends StatefulWidget {
   final String? initialValue; // Initial value (ID)
   final String? initialDisplayText; // Initial display text
   final Function(Map<String, dynamic>) onItemSelected;
+  final Function(String)? onSearchTextChanged;
 
   const SearchDropdown({
     Key? key,
@@ -19,6 +20,7 @@ class SearchDropdown extends StatefulWidget {
     this.initialValue, // Initial value (ID)
     this.initialDisplayText, // Initial display text
     required this.onItemSelected,
+    this.onSearchTextChanged,
   }) : super(key: key);
 
   @override
@@ -112,7 +114,10 @@ class _SearchDropdownState extends State<SearchDropdown> {
               borderSide: const BorderSide(color: Colors.blue, width: 1.5),
             ),
           ),
-          onChanged: _search,
+          onChanged: (value) {
+            _search(value);
+            widget.onSearchTextChanged?.call(value);
+          },
         ),
         const SizedBox(height: 8),
         if (_results.isNotEmpty)
