@@ -264,17 +264,15 @@ class _EditTPRScreenState extends State<EditTPRScreen> {
         ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      readOnly: true,
-      onTap: () async {
-        TimeOfDay? pickedTime = await showTimePicker(
-          context: context,
-          initialTime: TimeOfDay.now(),
-        );
-        if (pickedTime != null) {
-          setState(() {
-            _timeController.text = pickedTime.format(context);
-          });
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter time (HH:MM format)';
         }
+        // Validate time format (HH:MM)
+        if (!RegExp(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$').hasMatch(value)) {
+          return 'Please enter valid time (HH:MM format)';
+        }
+        return null;
       },
     );
   }

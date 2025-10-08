@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../tpr/tpr_list_screen.dart';
 import '../drug_chart/list_drug_chart.dart';
+import '../treatment/list_treatment_screen.dart';
 import 'dart:async';
 import '../../helper/api_helper.dart';
 
@@ -315,7 +316,7 @@ class _IPDListScreenState extends State<IPDListScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
+                          horizontal: 8,
                           vertical: 10,
                         ),
                         backgroundColor: Theme.of(
@@ -330,19 +331,19 @@ class _IPDListScreenState extends State<IPDListScreen> {
                       child: const Row(
                         children: [
                           Text(
-                            'TPR Details',
+                            'TPR',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward_ios, size: 14),
+                          SizedBox(width: 4),
+                          Icon(Icons.monitor_heart, size: 14),
                         ],
                       ),
                     ),
                     const SizedBox(
-                      width: 8,
+                      width: 4,
                     ), // Add some spacing between buttons
                     ElevatedButton(
                       onPressed: () {
@@ -356,7 +357,7 @@ class _IPDListScreenState extends State<IPDListScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
+                          horizontal: 8,
                           vertical: 10,
                         ),
                         backgroundColor: Colors.green.withOpacity(
@@ -377,8 +378,49 @@ class _IPDListScreenState extends State<IPDListScreen> {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(width: 4),
                           Icon(Icons.medical_services_outlined, size: 14),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 4,
+                    ), // Add some spacing between buttons
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                TreatmentListScreen(patient: ipdRecord),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 10,
+                        ),
+                        backgroundColor: Colors.orange.withOpacity(
+                          0.9,
+                        ), // Different color for treatment
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 2,
+                      ),
+                      child: const Row(
+                        children: [
+                          Text(
+                            'Treatment',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(Icons.healing_outlined, size: 14),
                         ],
                       ),
                     ),
