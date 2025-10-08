@@ -15,32 +15,46 @@ class DrugChartListScreen extends StatefulWidget {
 
 class _DrugChartListScreenState extends State<DrugChartListScreen> {
   late Future<Map<String, dynamic>> _drugData;
-  final TextEditingController _searchController = TextEditingController();
-  Timer? _debounce;
+  DateTime? _selectedDate;
   int _currentPage = 1;
 
   @override
   void initState() {
     super.initState();
+    _selectedDate = DateTime.now();
     _drugData = _fetchDrugs();
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
-    _debounce?.cancel();
     super.dispose();
   }
 
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        _currentPage = 1;
+        _drugData = _fetchDrugs(date: _selectedDate, page: _currentPage);
+      });
+    }
+  }
+
   Future<Map<String, dynamic>> _fetchDrugs({
-    String? search,
+    DateTime? date,
     int page = 1,
   }) async {
     try {
       String endpoint =
           'drug-chart?ipdNo=${widget.patient['IPDNO']}&page=$page';
-      if (search != null && search.isNotEmpty) {
-        endpoint += '&search=$search';
+      if (date != null) {
+        endpoint += '&Date=${date.toIso8601String().split('T')[0]}';
       }
 
       final response = await ApiHelper.request(endpoint);
@@ -87,7 +101,7 @@ class _DrugChartListScreenState extends State<DrugChartListScreen> {
               );
               if (result == true) {
                 setState(() {
-                  _drugData = _fetchDrugs(search: _searchController.text);
+                  _drugData = _fetchDrugs(date: _selectedDate);
                 });
               }
             },
@@ -97,27 +111,35 @@ class _DrugChartListScreenState extends State<DrugChartListScreen> {
           preferredSize: const Size.fromHeight(kToolbarHeight + 5),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search drugs...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  borderSide: BorderSide.none,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedDate != null
+                        ? 'Date: ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
+                        : 'Select Date',
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                  ),
                 ),
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.9),
-              ),
-              onChanged: (value) {
-                if (_debounce?.isActive ?? false) _debounce?.cancel();
-                _debounce = Timer(const Duration(milliseconds: 500), () {
-                  setState(() {
-                    _currentPage = 1;
-                    _drugData = _fetchDrugs(search: value, page: _currentPage);
-                  });
-                });
-              },
+                ElevatedButton(
+                  onPressed: _selectDate,
+                  child: const Text('Select Date'),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _selectedDate = DateTime.now();
+                      _currentPage = 1;
+                      _drugData = _fetchDrugs(
+                        date: _selectedDate,
+                        page: _currentPage,
+                      );
+                    });
+                  },
+                  child: const Text('Today'),
+                ),
+              ],
             ),
           ),
         ),
@@ -144,7 +166,7 @@ class _DrugChartListScreenState extends State<DrugChartListScreen> {
                     onPressed: () {
                       setState(() {
                         _drugData = _fetchDrugs(
-                          search: _searchController.text,
+                          date: _selectedDate,
                           page: _currentPage,
                         );
                       });
@@ -188,7 +210,7 @@ class _DrugChartListScreenState extends State<DrugChartListScreen> {
               onRefresh: () async {
                 setState(() {
                   _drugData = _fetchDrugs(
-                    search: _searchController.text,
+                    date: _selectedDate,
                     page: _currentPage,
                   );
                 });
@@ -217,7 +239,7 @@ class _DrugChartListScreenState extends State<DrugChartListScreen> {
                                     setState(() {
                                       _currentPage = currentPage - 1;
                                       _drugData = _fetchDrugs(
-                                        search: _searchController.text,
+                                        date: _selectedDate,
                                         page: _currentPage,
                                       );
                                     });
@@ -232,7 +254,7 @@ class _DrugChartListScreenState extends State<DrugChartListScreen> {
                                     setState(() {
                                       _currentPage = currentPage + 1;
                                       _drugData = _fetchDrugs(
-                                        search: _searchController.text,
+                                        date: _selectedDate,
                                         page: _currentPage,
                                       );
                                     });
@@ -277,7 +299,7 @@ class _DrugChartListScreenState extends State<DrugChartListScreen> {
             );
             if (result == true) {
               setState(() {
-                _drugData = _fetchDrugs(search: _searchController.text);
+                _drugData = _fetchDrugs(date: _selectedDate);
               });
             }
           },
@@ -330,9 +352,7 @@ class _DrugChartListScreenState extends State<DrugChartListScreen> {
                         );
                         if (result == true) {
                           setState(() {
-                            _drugData = _fetchDrugs(
-                              search: _searchController.text,
-                            );
+                            _drugData = _fetchDrugs(date: _selectedDate);
                           });
                         }
                       },
@@ -380,9 +400,7 @@ class _DrugChartListScreenState extends State<DrugChartListScreen> {
                                 ),
                               );
                               setState(() {
-                                _drugData = _fetchDrugs(
-                                  search: _searchController.text,
-                                );
+                                _drugData = _fetchDrugs(date: _selectedDate);
                               });
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
