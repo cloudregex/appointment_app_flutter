@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../helper/api_helper.dart';
 import 'add_drug_chart.dart';
 import 'edit_drug_chart.dart';
+import 'duplicate_drug_chart.dart';
 
 class DrugChartListScreen extends StatefulWidget {
   final Map<String, dynamic> patient;
@@ -338,6 +339,25 @@ class _DrugChartListScreenState extends State<DrugChartListScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    IconButton(
+                      icon: const Icon(Icons.copy, color: Colors.green),
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DuplicateDrugChartScreen(
+                              patient: widget.patient,
+                              drugRecord: drugRecord,
+                            ),
+                          ),
+                        );
+                        if (result == true) {
+                          setState(() {
+                            _drugData = _fetchDrugs(date: _selectedDate);
+                          });
+                        }
+                      },
+                    ),
                     IconButton(
                       icon: const Icon(Icons.edit, color: Colors.blue),
                       onPressed: () async {
