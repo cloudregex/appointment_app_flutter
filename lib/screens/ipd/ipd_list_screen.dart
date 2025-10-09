@@ -279,6 +279,11 @@ class _IPDListScreenState extends State<IPDListScreen> {
                         ],
                       ),
                     ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () =>
+                          _showDeleteConfirmation(context, ipdRecord),
+                    ),
                   ],
                 ),
                 const Divider(height: 24, thickness: 1),
@@ -458,5 +463,69 @@ class _IPDListScreenState extends State<IPDListScreen> {
         ],
       ),
     );
+  }
+
+  void _showDeleteConfirmation(
+    BuildContext context,
+    Map<String, dynamic> ipdRecord,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: const Text(
+            'Are you sure you want to delete this IPD record?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+                _deleteIPDRecord(ipdRecord);
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteIPDRecord(Map<String, dynamic> ipdRecord) async {
+    try {
+      final response = await ApiHelper.request(
+        'current-ipd/${ipdRecord['CIPDOID']}',
+        method: 'DELETE',
+      );
+
+      if (response != null && response['message'] == 'IPD record deleted') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('IPD record deleted successfully!')),
+        );
+        // Refresh the data after deletion
+        setState(() {
+          _ipdData = _fetchIPD(
+            search: _searchController.text,
+            page: _currentPage,
+          );
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response?['message'] ?? 'Failed to delete IPD record.',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error deleting IPD record: $e')));
+    }
   }
 }
