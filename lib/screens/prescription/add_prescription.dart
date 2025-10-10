@@ -146,8 +146,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                     _buildTextField('Content Name', _contentNameController, 'Enter content name', isRequired: false),
                     _buildTextField('Notes', _notesController, 'Enter notes', isRequired: false),
                     _buildTextField('Advice', _adviceController, 'Enter advice', isRequired: false),
-                    _buildTextField('ApDate', _apDateController, 'Enter appointment date', isRequired: false),
-                    _buildDateFieldApDate(),
+                    _buildApDateField(),
                     _buildTextField('CC', _ccController, 'Enter CC', isRequired: false),
                     _buildTextField('CF', _cfController, 'Enter CF', isRequired: false),
                     _buildTextField('GE', _geController, 'Enter GE', isRequired: false),
@@ -182,39 +181,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     );
  }
 
- Widget _buildDateFieldApDate() {
-   return Padding(
-     padding: const EdgeInsets.only(bottom: 16.0),
-     child: TextFormField(
-       controller: _apDateController,
-       readOnly: true,
-       decoration: InputDecoration(
-         labelText: 'ApDate',
-         border: OutlineInputBorder(
-           borderRadius: BorderRadius.circular(10.0),
-         ),
-         prefixIcon: const Icon(Icons.calendar_today),
-       ),
-       onTap: () async {
-         final DateTime? picked = await showDatePicker(
-           context: context,
-           initialDate: DateTime.now(),
-           firstDate: DateTime(2000),
-           lastDate: DateTime(2101),
-         );
-         if (picked != null) {
-           _apDateController.text = DateFormat('yyyy-MM-dd').format(picked);
-         }
-       },
-       validator: (value) {
-         if (value == null || value.isEmpty) {
-           return 'Please select an appointment date';
-         }
-         return null;
-       },
-     ),
-   );
- }
 
   Widget _buildTextField(String label, TextEditingController controller, String hint, {bool isRequired = false}) {
     return Padding(
@@ -285,6 +251,40 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Please select a date';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildApDateField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextFormField(
+        controller: _apDateController,
+        readOnly: true,
+        decoration: InputDecoration(
+          labelText: 'ApDate',
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          prefixIcon: const Icon(Icons.calendar_today),
+        ),
+        onTap: () async {
+          final DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(2000),
+            lastDate: DateTime(2101),
+          );
+          if (picked != null) {
+            _apDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+          }
+        },
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please select an appointment date';
           }
           return null;
         },
