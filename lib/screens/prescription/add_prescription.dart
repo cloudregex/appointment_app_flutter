@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../helper/api_helper.dart';
-import '../utils/search_dropdown.dart';
 
 class AddPrescriptionScreen extends StatefulWidget {
   final Map<String, dynamic>? appointmentData;
@@ -22,12 +21,12 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
  final TextEditingController _contentNameController = TextEditingController();
  final TextEditingController _notesController = TextEditingController();
   final TextEditingController _adviceController = TextEditingController();
+  final TextEditingController _apDateController = TextEditingController();
   final TextEditingController _ccController = TextEditingController();
- final TextEditingController _cfController = TextEditingController();
-  final TextEditingController _geController = TextEditingController();
+  final TextEditingController _cfController = TextEditingController();
+   final TextEditingController _geController = TextEditingController();
   final TextEditingController _invController = TextEditingController();
-  final TextEditingController _drNameController = TextEditingController();
-  String _droid = '';
+  final TextEditingController _nameController = TextEditingController();
   bool _isLoading = false;
 
   @override
@@ -45,11 +44,12 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     _contentNameController.dispose();
     _notesController.dispose();
     _adviceController.dispose();
+    _apDateController.dispose();
     _ccController.dispose();
     _cfController.dispose();
     _geController.dispose();
     _invController.dispose();
-    _drNameController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -74,20 +74,18 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
      final Map<String, dynamic> data = {
        'PrescriptionNo': int.tryParse(_prescriptionNoController.text) ?? 0,
        'Date': _dateController.text,
-       'POID': widget.appointmentData?['id'] ?? widget.appointmentData?['APPID'] ?? 0,
+       'POID': widget.appointmentData?['POID'], // Using the appointment data directly
        'History': _historyController.text,
        'ItemName': _itemNameController.text,
        'ContentName': _contentNameController.text,
        'Notes': _notesController.text,
        'Advice': _adviceController.text,
-       'ApDate': _dateController.text,
+       'ApDate': _apDateController.text.isEmpty ? _dateController.text : _apDateController.text,
        'cc': _ccController.text,
        'cf': _cfController.text,
        'ge': _geController.text,
        'inv': _invController.text,
-       'Name': widget.appointmentData?['Name'] ?? 'N/A',
-       'DrName': _drNameController.text.isEmpty ? (widget.appointmentData?['DrName'] ?? widget.appointmentData?['doctor_name'] ?? 'N/A') : _drNameController.text,
-       'DROID': _droid.isEmpty ? (widget.appointmentData?['DrOID'] ?? 0) : _droid,
+       'Name':widget.appointmentData?['Name'] ?? 'N/A',
      };
 
      try {
@@ -148,23 +146,13 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                     _buildTextField('Content Name', _contentNameController, 'Enter content name', isRequired: false),
                     _buildTextField('Notes', _notesController, 'Enter notes', isRequired: false),
                     _buildTextField('Advice', _adviceController, 'Enter advice', isRequired: false),
-                    SearchDropdown(
-                      apiUrl: "doctors-list",
-                      hintText: "Search Doctor",
-                      displayKey: "Name",
-                      valueKey: "DrOID",
-                      onItemSelected: (doctor) {
-                        setState(() {
-                          _droid = doctor['DrOID'].toString();
-                          _drNameController.text = doctor['Name']?.toString() ?? '';
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                    _buildTextField('ApDate', _apDateController, 'Enter appointment date', isRequired: false),
+                    _buildDateFieldApDate(),
                     _buildTextField('CC', _ccController, 'Enter CC', isRequired: false),
                     _buildTextField('CF', _cfController, 'Enter CF', isRequired: false),
                     _buildTextField('GE', _geController, 'Enter GE', isRequired: false),
                     _buildTextField('INV', _invController, 'Enter INV', isRequired: false),
+                    _buildTextField('Name', _nameController, 'Enter name', isRequired: false),
                     const SizedBox(height: 32),
                     Center(
                       child: ElevatedButton(
@@ -192,6 +180,40 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
               ),
             ),
     );
+ }
+
+ Widget _buildDateFieldApDate() {
+   return Padding(
+     padding: const EdgeInsets.only(bottom: 16.0),
+     child: TextFormField(
+       controller: _apDateController,
+       readOnly: true,
+       decoration: InputDecoration(
+         labelText: 'ApDate',
+         border: OutlineInputBorder(
+           borderRadius: BorderRadius.circular(10.0),
+         ),
+         prefixIcon: const Icon(Icons.calendar_today),
+       ),
+       onTap: () async {
+         final DateTime? picked = await showDatePicker(
+           context: context,
+           initialDate: DateTime.now(),
+           firstDate: DateTime(2000),
+           lastDate: DateTime(2101),
+         );
+         if (picked != null) {
+           _apDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+         }
+       },
+       validator: (value) {
+         if (value == null || value.isEmpty) {
+           return 'Please select an appointment date';
+         }
+         return null;
+       },
+     ),
+   );
  }
 
   Widget _buildTextField(String label, TextEditingController controller, String hint, {bool isRequired = false}) {
@@ -270,32 +292,5 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, dynamic value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              '$label: ',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value?.toString() ?? 'N/A',
-              style: const TextStyle(
-                color: Colors.black87,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
 }
