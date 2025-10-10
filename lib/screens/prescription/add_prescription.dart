@@ -14,7 +14,6 @@ class AddPrescriptionScreen extends StatefulWidget {
 
 class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _prescriptionNoController = TextEditingController();
  final TextEditingController _dateController = TextEditingController();
   final TextEditingController _historyController = TextEditingController();
   final TextEditingController _itemNameController = TextEditingController();
@@ -26,7 +25,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
   final TextEditingController _cfController = TextEditingController();
    final TextEditingController _geController = TextEditingController();
   final TextEditingController _invController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
   bool _isLoading = false;
 
   @override
@@ -37,7 +35,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
 
   @override
   void dispose() {
-    _prescriptionNoController.dispose();
     _dateController.dispose();
     _historyController.dispose();
     _itemNameController.dispose();
@@ -49,7 +46,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     _cfController.dispose();
     _geController.dispose();
     _invController.dispose();
-    _nameController.dispose();
     super.dispose();
   }
 
@@ -72,7 +68,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
      });
 
      final Map<String, dynamic> data = {
-       'PrescriptionNo': int.tryParse(_prescriptionNoController.text) ?? 0,
        'Date': _dateController.text,
        'POID': widget.appointmentData?['POID'], // Using the appointment data directly
        'History': _historyController.text,
@@ -139,7 +134,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTextField('Prescription No', _prescriptionNoController, 'Enter prescription number', isRequired: true),
                     _buildDateField(),
                     _buildTextField('History', _historyController, 'Enter history', isRequired: false),
                     _buildTextField('Item Name', _itemNameController, 'Enter item name', isRequired: false),
@@ -151,7 +145,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                     _buildTextField('CF', _cfController, 'Enter CF', isRequired: false),
                     _buildTextField('GE', _geController, 'Enter GE', isRequired: false),
                     _buildTextField('INV', _invController, 'Enter INV', isRequired: false),
-                    _buildTextField('Name', _nameController, 'Enter name', isRequired: false),
                     const SizedBox(height: 32),
                     Center(
                       child: ElevatedButton(
