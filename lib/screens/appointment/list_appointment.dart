@@ -5,6 +5,7 @@ import '../../helper/api_helper.dart';
 import './add_appointment.dart';
 import './edit_appointment.dart';
 import './view_appointment.dart';
+import '../prescription/list_prescription.dart';
 
 class AppointmentListScreen extends StatefulWidget {
   const AppointmentListScreen({super.key});
@@ -632,6 +633,36 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                       ),
                       child: const Text(
                         'Edit',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PrescriptionListScreen(appointmentData: appointment),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        backgroundColor: Colors.blue[600],
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: const Text(
+                        'Add Prescription',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
