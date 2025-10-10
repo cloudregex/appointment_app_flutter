@@ -14,16 +14,17 @@ class AddPrescriptionScreen extends StatefulWidget {
 
 class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
   final _formKey = GlobalKey<FormState>();
- final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
   final TextEditingController _historyController = TextEditingController();
   final TextEditingController _itemNameController = TextEditingController();
- final TextEditingController _contentNameController = TextEditingController();
- final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _contentNameController = TextEditingController();
+  final TextEditingController _totalController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
   final TextEditingController _adviceController = TextEditingController();
   final TextEditingController _apDateController = TextEditingController();
   final TextEditingController _ccController = TextEditingController();
   final TextEditingController _cfController = TextEditingController();
-   final TextEditingController _geController = TextEditingController();
+  final TextEditingController _geController = TextEditingController();
   final TextEditingController _invController = TextEditingController();
   bool _isLoading = false;
 
@@ -39,6 +40,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     _historyController.dispose();
     _itemNameController.dispose();
     _contentNameController.dispose();
+    _totalController.dispose();
     _notesController.dispose();
     _adviceController.dispose();
     _apDateController.dispose();
@@ -59,63 +61,67 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     if (picked != null) {
       _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
     }
- }
+  }
 
- Future<void> _savePrescription() async {
-   if (_formKey.currentState!.validate()) {
-     setState(() {
-       _isLoading = true;
-     });
+  Future<void> _savePrescription() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
 
-     final Map<String, dynamic> data = {
-       'Date': _dateController.text,
-       'POID': widget.appointmentData?['POID'], // Using the appointment data directly
-       'History': _historyController.text,
-       'ItemName': _itemNameController.text,
-       'ContentName': _contentNameController.text,
-       'Notes': _notesController.text,
-       'Advice': _adviceController.text,
-       'ApDate': _apDateController.text.isEmpty ? _dateController.text : _apDateController.text,
-       'cc': _ccController.text,
-       'cf': _cfController.text,
-       'ge': _geController.text,
-       'inv': _invController.text,
-       'Name':widget.appointmentData?['Name'] ?? 'N/A',
-     };
+      final Map<String, dynamic> data = {
+        'Date': _dateController.text,
+        'POID': widget
+            .appointmentData?['POID'], // Using the appointment data directly
+        'History': _historyController.text,
+        'ItemName': _itemNameController.text,
+        'ContentName': _contentNameController.text,
+        'Total': _totalController.text,
+        'Notes': _notesController.text,
+        'Advice': _adviceController.text,
+        'ApDate': _apDateController.text.isEmpty
+            ? _dateController.text
+            : _apDateController.text,
+        'cc': _ccController.text,
+        'cf': _cfController.text,
+        'ge': _geController.text,
+        'inv': _invController.text,
+        'Name': widget.appointmentData?['Name'] ?? 'N/A',
+      };
 
-     try {
-       final response = await ApiHelper.request(
-         'prescriptions',
-         method: 'POST',
-         body: data,
-       );
-       if (response != null) {
-         ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(
-             content: Text('Prescription record created successfully!'),
-           ),
-         );
-         Navigator.pop(context, true);
-       } else {
-         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
-             content: Text(
-               response?['message'] ?? 'Failed to create prescription record.',
-             ),
-           ),
-         );
-       }
-     } catch (e) {
-       ScaffoldMessenger.of(
-         context,
-       ).showSnackBar(SnackBar(content: Text('Error: $e')));
-     } finally {
-       setState(() {
-         _isLoading = false;
-       });
-     }
-   }
- }
+      try {
+        final response = await ApiHelper.request(
+          'prescriptions',
+          method: 'POST',
+          body: data,
+        );
+        if (response != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Prescription record created successfully!'),
+            ),
+          );
+          Navigator.pop(context, true);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                response?['message'] ?? 'Failed to create prescription record.',
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,16 +141,67 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildDateField(),
-                    _buildTextField('History', _historyController, 'Enter history', isRequired: false),
-                    _buildTextField('Item Name', _itemNameController, 'Enter item name', isRequired: false),
-                    _buildTextField('Content Name', _contentNameController, 'Enter content name', isRequired: false),
-                    _buildTextField('Notes', _notesController, 'Enter notes', isRequired: false),
-                    _buildTextField('Advice', _adviceController, 'Enter advice', isRequired: false),
+                    _buildTextField(
+                      'History',
+                      _historyController,
+                      'Enter history',
+                      isRequired: false,
+                    ),
+                    _buildTextField(
+                      'Item Name',
+                      _itemNameController,
+                      'Enter item name',
+                      isRequired: false,
+                    ),
+                    _buildTextField(
+                      'Content Name',
+                      _contentNameController,
+                      'Enter content name',
+                      isRequired: false,
+                    ),
+                    _buildTextField(
+                      'Total',
+                      _totalController,
+                      'Enter total',
+                      isRequired: false,
+                    ),
+                    _buildTextField(
+                      'Notes',
+                      _notesController,
+                      'Enter notes',
+                      isRequired: false,
+                    ),
+                    _buildTextField(
+                      'Advice',
+                      _adviceController,
+                      'Enter advice',
+                      isRequired: false,
+                    ),
                     _buildApDateField(),
-                    _buildTextField('CC', _ccController, 'Enter CC', isRequired: false),
-                    _buildTextField('CF', _cfController, 'Enter CF', isRequired: false),
-                    _buildTextField('GE', _geController, 'Enter GE', isRequired: false),
-                    _buildTextField('INV', _invController, 'Enter INV', isRequired: false),
+                    _buildTextField(
+                      'CC',
+                      _ccController,
+                      'Enter CC',
+                      isRequired: false,
+                    ),
+                    _buildTextField(
+                      'CF',
+                      _cfController,
+                      'Enter CF',
+                      isRequired: false,
+                    ),
+                    _buildTextField(
+                      'GE',
+                      _geController,
+                      'Enter GE',
+                      isRequired: false,
+                    ),
+                    _buildTextField(
+                      'INV',
+                      _invController,
+                      'Enter INV',
+                      isRequired: false,
+                    ),
                     const SizedBox(height: 32),
                     Center(
                       child: ElevatedButton(
@@ -172,10 +229,14 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
               ),
             ),
     );
- }
+  }
 
-
-  Widget _buildTextField(String label, TextEditingController controller, String hint, {bool isRequired = false}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    String hint, {
+    bool isRequired = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: TextFormField(
@@ -183,9 +244,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
           prefixIcon: _getIconForLabel(label),
         ),
         validator: isRequired
@@ -235,9 +294,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
         readOnly: true,
         decoration: InputDecoration(
           labelText: 'Date',
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
           prefixIcon: const Icon(Icons.calendar_today),
         ),
         onTap: () => _selectDate(),
@@ -259,9 +316,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
         readOnly: true,
         decoration: InputDecoration(
           labelText: 'ApDate',
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
           prefixIcon: const Icon(Icons.calendar_today),
         ),
         onTap: () async {
@@ -284,6 +339,4 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
       ),
     );
   }
-
-
 }
