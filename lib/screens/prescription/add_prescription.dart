@@ -2,6 +2,33 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../helper/api_helper.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+// import '../utils/search_dropdown.dart'; // Commented out as per user request
+
+class MedicineEntry {
+  final TextEditingController medicineNameController;
+  final TextEditingController dosageController;
+  final TextEditingController durationController;
+  int? medicineId; // Added medicineId
+
+  MedicineEntry({
+    required String medicineName,
+    required String dosage,
+    required String duration,
+    this.medicineId,
+  }) : medicineNameController = TextEditingController(text: medicineName),
+       dosageController = TextEditingController(text: dosage),
+       durationController = TextEditingController(text: duration);
+
+  Map<String, dynamic> toJson() {
+    return {
+      'medicineId': medicineId, // Include medicineId
+      'medicineName': medicineNameController.text,
+      'dosage': dosageController.text,
+      'duration': durationController.text,
+    };
+  }
+}
 
 class AddPrescriptionScreen extends StatefulWidget {
   final Map<String, dynamic>? appointmentData;
@@ -26,29 +53,24 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
   final TextEditingController _cfController = TextEditingController();
   final TextEditingController _geController = TextEditingController();
   final TextEditingController _invController = TextEditingController();
+  final TextEditingController _generalExaminationController =
+      TextEditingController();
+  final TextEditingController _weightController = TextEditingController();
+  final TextEditingController _bpController = TextEditingController();
+  final TextEditingController _clinicalFindingController =
+      TextEditingController();
+  final TextEditingController _diagnosisController = TextEditingController();
+
+  final List<MedicineEntry> _medicineEntries = [];
+  List<Map<String, dynamic>> _investigationList = []; // Moved to class level
+
   bool _isLoading = false;
+  final _formBottomSheetKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
     _dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
-  }
-
-  @override
-  void dispose() {
-    _dateController.dispose();
-    _historyController.dispose();
-    _itemNameController.dispose();
-    _contentNameController.dispose();
-    _totalController.dispose();
-    _notesController.dispose();
-    _adviceController.dispose();
-    _apDateController.dispose();
-    _ccController.dispose();
-    _cfController.dispose();
-    _geController.dispose();
-    _invController.dispose();
-    super.dispose();
   }
 
   Future<void> _selectDate() async {
@@ -86,7 +108,28 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
         'cf': _cfController.text,
         'ge': _geController.text,
         'inv': _invController.text,
+        'GeneralExamination': _generalExaminationController.text,
+        'Weight': _weightController.text,
+        'BP': _bpController.text,
+        'ClinicalFinding': _clinicalFindingController.text,
+        'Diagnosis': _diagnosisController.text,
         'Name': widget.appointmentData?['Name'] ?? 'N/A',
+        'Medicines': _medicineEntries
+            .where(
+              (entry) =>
+                  entry.medicineNameController.text.isNotEmpty ||
+                  entry.dosageController.text.isNotEmpty ||
+                  entry.durationController.text.isNotEmpty,
+            )
+            .map(
+              (e) => {
+                'medicineId': e.medicineId,
+                'medicineName': e.medicineNameController.text,
+                'dosage': e.dosageController.text,
+                'duration': e.durationController.text,
+              },
+            )
+            .toList(),
       };
 
       try {
@@ -140,68 +183,96 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDateField(),
+                    _buildTextField(
+                      'Pt Name',
+                      TextEditingController(
+                        text: widget.appointmentData?['Name'] ?? 'N/A',
+                      ),
+                      'Patient Name',
+                      isRequired: false,
+                      readOnly: true,
+                    ),
+                    _buildTextField(
+                      'P No',
+                      TextEditingController(
+                        text:
+                            widget.appointmentData?['POID']?.toString() ??
+                            'N/A',
+                      ),
+                      'P No',
+                      isRequired: false,
+                      readOnly: true,
+                    ),
+                    _buildTextField(
+                      'General examination',
+                      _generalExaminationController,
+                      'Enter general examination',
+                      isRequired: false,
+                    ),
+                    _buildTextField(
+                      'Weight',
+                      _weightController,
+                      'Enter weight',
+                      isRequired: false,
+                    ),
+                    _buildTextField(
+                      'BP',
+                      _bpController,
+                      'Enter BP',
+                      isRequired: false,
+                    ),
+                    _buildDateField(), // Date field
                     _buildTextField(
                       'History',
                       _historyController,
                       'Enter history',
                       isRequired: false,
+                      maxLines: 3,
+                      keyboardType: TextInputType.multiline,
                     ),
                     _buildTextField(
-                      'Item Name',
-                      _itemNameController,
-                      'Enter item name',
+                      'Chief Complaints',
+                      _ccController,
+                      'Enter Chief Complaints',
                       isRequired: false,
+                      maxLines: 3,
                     ),
                     _buildTextField(
-                      'Content Name',
-                      _contentNameController,
-                      'Enter content name',
+                      'Clinical Finding',
+                      _clinicalFindingController,
+                      'Enter Clinical Finding',
                       isRequired: false,
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 16.0),
+                    _buildMedicineTable(),
+                    const SizedBox(height: 16.0),
+                    _buildTextField(
+                      'Diagnosis',
+                      _diagnosisController,
+                      'Enter Diagnosis',
+                      isRequired: false,
+                      maxLines: 3,
                     ),
                     _buildTextField(
-                      'Total',
-                      _totalController,
-                      'Enter total',
+                      'Investigation',
+                      _invController,
+                      'Enter Investigation',
                       isRequired: false,
-                    ),
-                    _buildTextField(
-                      'Notes',
-                      _notesController,
-                      'Enter notes',
-                      isRequired: false,
+                      maxLines: 3,
+                      hasAddButton: true,
+                      onAddButtonPressed: _showAddInvestigationBottomSheet,
                     ),
                     _buildTextField(
                       'Advice',
                       _adviceController,
-                      'Enter advice',
+                      'Enter Advice',
                       isRequired: false,
+                      maxLines: 3,
+                      hasAddButton: true,
+                      onAddButtonPressed: _showAddAdviceBottomSheet,
                     ),
-                    _buildApDateField(),
-                    _buildTextField(
-                      'CC',
-                      _ccController,
-                      'Enter CC',
-                      isRequired: false,
-                    ),
-                    _buildTextField(
-                      'CF',
-                      _cfController,
-                      'Enter CF',
-                      isRequired: false,
-                    ),
-                    _buildTextField(
-                      'GE',
-                      _geController,
-                      'Enter GE',
-                      isRequired: false,
-                    ),
-                    _buildTextField(
-                      'INV',
-                      _invController,
-                      'Enter INV',
-                      isRequired: false,
-                    ),
+                    _buildApDateField(), // Appointment Date field
                     const SizedBox(height: 32),
                     Center(
                       child: ElevatedButton(
@@ -231,21 +302,65 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     );
   }
 
+  void _confirmDeleteMedicine(int index) {
+    showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: const Text(
+            'Are you sure you want to delete this medicine entry?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    ).then((confirmed) {
+      if (confirmed == true) {
+        setState(() {
+          _medicineEntries.removeAt(index);
+        });
+      }
+    });
+  }
+
   Widget _buildTextField(
     String label,
     TextEditingController controller,
     String hint, {
     bool isRequired = false,
+    bool readOnly = false,
+    int? maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+    bool hasAddButton = false,
+    VoidCallback? onAddButtonPressed,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: TextFormField(
         controller: controller,
+        readOnly: readOnly,
+        maxLines: maxLines,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
           prefixIcon: _getIconForLabel(label),
+          suffixIcon: hasAddButton
+              ? IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: onAddButtonPressed,
+                )
+              : null,
         ),
         validator: isRequired
             ? (value) {
@@ -281,6 +396,22 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
         return const Icon(Icons.favorite_outlined);
       case 'inv':
         return const Icon(Icons.assignment_outlined);
+      case 'pt name':
+        return const Icon(Icons.person);
+      case 'p no':
+        return const Icon(Icons.numbers);
+      case 'general examination':
+        return const Icon(Icons.medical_information);
+      case 'weight':
+        return const Icon(Icons.scale);
+      case 'bp':
+        return const Icon(Icons.monitor_heart);
+      case 'clinical finding':
+        return const Icon(Icons.find_in_page);
+      case 'diagnosis':
+        return const Icon(Icons.medical_services);
+      case 'investigation':
+        return const Icon(Icons.science);
       default:
         return const Icon(Icons.edit);
     }
@@ -337,6 +468,410 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
           return null;
         },
       ),
+    );
+  }
+
+  Widget _buildMedicineTable() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Medicine List',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            ElevatedButton.icon(
+              onPressed: _showAddMedicineBottomSheet,
+              icon: const Icon(Icons.add),
+              label: const Text('Add Medicine'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Column(
+            children: [
+              Table(
+                border: TableBorder.symmetric(
+                  inside: const BorderSide(color: Colors.grey, width: 0.5),
+                ),
+                children: [
+                  const TableRow(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          'Medicine Name',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          'Dosage',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          'Duration',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                  ..._medicineEntries.asMap().entries.map((entry) {
+                    int index = entry.key;
+                    MedicineEntry medicineEntry = entry.value;
+                    return TableRow(
+                      children: [
+                        GestureDetector(
+                          onLongPress: () => _confirmDeleteMedicine(index),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              medicineEntry.medicineNameController.text,
+                            ), // Display medicine name
+                          ),
+                        ),
+                        GestureDetector(
+                          onLongPress: () => _confirmDeleteMedicine(index),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(medicineEntry.dosageController.text),
+                          ),
+                        ),
+                        GestureDetector(
+                          onLongPress: () => _confirmDeleteMedicine(index),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(medicineEntry.durationController.text),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showAddMedicineBottomSheet() {
+    final TextEditingController _tempMedicineNameController =
+        TextEditingController();
+    final TextEditingController _tempDosageController = TextEditingController();
+    final TextEditingController _tempDurationController =
+        TextEditingController();
+    int? _tempMedicineId;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add Medicine'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _formBottomSheetKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TypeAheadField<Map<String, dynamic>>(
+                    builder: (context, controller, focusNode) {
+                      return TextFormField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        decoration: const InputDecoration(
+                          labelText: 'Medicine Name',
+                          border: OutlineInputBorder(),
+                        ),
+                      );
+                    },
+                    suggestionsCallback: (pattern) async {
+                      final response = await ApiHelper.request(
+                        'item-list?search=$pattern',
+                        method: 'GET',
+                      );
+                      if (response != null && response is List) {
+                        return response.cast<Map<String, dynamic>>();
+                      }
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        title: Text(suggestion['ItemName'] ?? ''),
+                      );
+                    },
+                    onSelected: (suggestion) {
+                      _tempMedicineNameController.text = suggestion['ItemName'];
+                      _tempMedicineId = suggestion['ItemID'];
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _tempDosageController,
+                    decoration: const InputDecoration(
+                      labelText: 'Dosage',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Dosage is required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _tempDurationController,
+                    decoration: const InputDecoration(
+                      labelText: 'Duration',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Duration is required';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_formBottomSheetKey.currentState!.validate()) {
+                  setState(() {
+                    _medicineEntries.add(
+                      MedicineEntry(
+                        medicineName: _tempMedicineNameController.text,
+                        dosage: _tempDosageController.text,
+                        duration: _tempDurationController.text,
+                        medicineId: _tempMedicineId,
+                      ),
+                    );
+                  });
+
+                  Navigator.pop(context); // Close the dialog
+                }
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAddInvestigationBottomSheet() {
+    final TextEditingController _tempInvestigationNameController =
+        TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add Investigation'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _formBottomSheetKey, // Reusing the existing form key
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TypeAheadField<Map<String, dynamic>>(
+                    builder: (context, controller, focusNode) {
+                      return TextFormField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        decoration: const InputDecoration(
+                          labelText: 'Investigation Name',
+                          border: OutlineInputBorder(),
+                        ),
+                      );
+                    },
+                    suggestionsCallback: (pattern) async {
+                      final response = await ApiHelper.request(
+                        'invention-list?search=$pattern',
+                        method: 'GET',
+                      );
+                      print(response);
+                      if (response != null && response is List) {
+                        return response.cast<Map<String, dynamic>>();
+                      }
+                      return const <Map<String, dynamic>>[];
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        title: Text(suggestion['TestName'] ?? ''),
+                      );
+                    },
+                    onSelected: (suggestion) {
+                      final newInvestigation = suggestion['TestName'] ?? '';
+                      setState(() {
+                        final currentText = _invController.text;
+                        List<String> investigations = currentText
+                            .split(RegExp(r'[,;\n]'))
+                            .map((s) => s.trim())
+                            .where((s) => s.isNotEmpty)
+                            .toList();
+
+                        if (!investigations.contains(newInvestigation)) {
+                          if (currentText.isEmpty ||
+                              currentText.endsWith('\n')) {
+                            _invController.text += '$newInvestigation, \n';
+                          } else {
+                            _invController.text += ',\n$newInvestigation, \n';
+                          }
+                        }
+                        _tempInvestigationNameController.clear();
+                      });
+                      Navigator.pop(
+                        context,
+                      ); // Close the dialog after selection
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_tempInvestigationNameController.text.isNotEmpty) {
+                  setState(() {
+                    final currentText = _invController.text;
+                    final newInvestigation =
+                        _tempInvestigationNameController.text;
+
+                    List<String> investigations = currentText
+                        .split(RegExp(r'[,;\n]'))
+                        .map((s) => s.trim())
+                        .where((s) => s.isNotEmpty)
+                        .toList();
+
+                    if (!investigations.contains(newInvestigation)) {
+                      if (currentText.isEmpty || currentText.endsWith('\n')) {
+                        _invController.text += '$newInvestigation, \n';
+                      } else {
+                        _invController.text += ',\n$newInvestigation, \n';
+                      }
+                    }
+                  });
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAddAdviceBottomSheet() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add Advice'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _formBottomSheetKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TypeAheadField<Map<String, dynamic>>(
+                    builder: (context, controller, focusNode) {
+                      return TextFormField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        decoration: const InputDecoration(
+                          labelText: 'Advice Name',
+                          border: OutlineInputBorder(),
+                        ),
+                      );
+                    },
+                    suggestionsCallback: (pattern) async {
+                      final response = await ApiHelper.request(
+                        'advice-list?search=$pattern',
+                        method: 'GET',
+                      );
+                      if (response != null && response is List) {
+                        return response.cast<Map<String, dynamic>>();
+                      }
+                      return const <Map<String, dynamic>>[];
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(title: Text(suggestion['AdvName'] ?? ''));
+                    },
+                    onSelected: (suggestion) {
+                      final newAdvice =
+                          '${suggestion['AdvName'] ?? ''}: ${suggestion['AdvNote'] ?? ''}';
+                      setState(() {
+                        final currentText = _adviceController.text;
+                        List<String> adviceList = currentText
+                            .split(RegExp(r'[,;\n]'))
+                            .map((s) => s.trim())
+                            .where((s) => s.isNotEmpty)
+                            .toList();
+
+                        if (!adviceList.contains(newAdvice)) {
+                          if (currentText.isEmpty ||
+                              currentText.endsWith('\n')) {
+                            _adviceController.text += '$newAdvice, \n';
+                          } else {
+                            _adviceController.text += ',\n$newAdvice, \n';
+                          }
+                        }
+                      });
+                      Navigator.pop(
+                        context,
+                      ); // Close the dialog after selection
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

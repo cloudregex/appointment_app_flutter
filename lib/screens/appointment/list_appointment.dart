@@ -35,7 +35,6 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     _debounce?.cancel();
     super.dispose();
   }
@@ -645,7 +644,9 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => PrescriptionListScreen(appointmentData: appointment),
+                            builder: (context) => PrescriptionListScreen(
+                              appointmentData: appointment,
+                            ),
                           ),
                         );
                       },
@@ -662,7 +663,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                         elevation: 4,
                       ),
                       child: const Text(
-                        'Add Prescription',
+                        'Add Presc.',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
