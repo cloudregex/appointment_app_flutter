@@ -55,7 +55,6 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
   final TextEditingController _itemNameController = TextEditingController();
   final TextEditingController _contentNameController = TextEditingController();
   final TextEditingController _totalController = TextEditingController();
-  final TextEditingController _notesController = TextEditingController();
   final TextEditingController _adviceController = TextEditingController();
   final TextEditingController _apDateController = TextEditingController();
   final TextEditingController _ccController = TextEditingController();
@@ -87,7 +86,6 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
         'prescriptions/${widget.prescriptionNo}',
         method: 'GET',
       );
-      print(response);
       if (response != null && response is List && response.isNotEmpty) {
         final prescription =
             response[0]; // Assuming all records for a PrescriptionNo share common details
@@ -96,14 +94,13 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
         _itemNameController.text = prescription['ItemName'] ?? '';
         _contentNameController.text = prescription['ContentName'] ?? '';
         _totalController.text = prescription['Total'] ?? '';
-        _notesController.text = prescription['Notes'] ?? '';
         _adviceController.text = prescription['Advice'] ?? '';
         _apDateController.text = prescription['ApDate'] ?? '';
         _ccController.text = prescription['cc'] ?? '';
         _clinicalFindingController.text = prescription['cf'] ?? '';
         _generalExaminationController.text = prescription['ge'] ?? '';
         _invController.text = prescription['inv'] ?? '';
-        _diagnosisController.text = prescription['Diagnosis'] ?? '';
+        _diagnosisController.text = prescription['Notes'] ?? '';
 
         _medicineEntries.clear();
         for (var item in response) {
@@ -153,11 +150,6 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
 
       for (var entry in _medicineEntries) {
         if (entry.medicineNameController.text.isNotEmpty) {
-          print(
-            'Medicine Entry - medicineName: ${entry.medicineNameController.text}',
-          );
-          print('Medicine Entry - dosage: ${entry.dosageController.text}');
-          print('Medicine Entry - duration: ${entry.durationController.text}');
           prescriptionDataList.add({
             'prescriptionOID': entry
                 .prescriptionOID, // Include prescriptionOID for existing records
@@ -167,7 +159,8 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
             'ItemName': entry.medicineNameController.text,
             'ContentName': entry.dosageController.text,
             'Total': entry.durationController.text,
-            'Notes': null, // Set Notes to null for medicine entries
+            'Notes': _contentNameController
+                .text, // Set Notes to null for medicine entries
             'Advice': _adviceController.text,
             'ApDate': _apDateController.text.isEmpty
                 ? _dateController.text
@@ -183,24 +176,6 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
 
       // If no medicines are added, add at least one default entry
       if (prescriptionDataList.isEmpty) {
-        print('Default Entry - Date: ${_dateController.text}');
-        print('Default Entry - POID: ${widget.appointmentData?['POID'] ?? 0}');
-        print('Default Entry - History: ${_historyController.text}');
-        print('Default Entry - ItemName: ${_itemNameController.text}');
-        print('Default Entry - ContentName: ${_contentNameController.text}');
-        print('Default Entry - Total: ${_totalController.text}');
-        print('Default Entry - Notes: ${_notesController.text}');
-        print('Default Entry - Advice: ${_adviceController.text}');
-        print('Default Entry - ApDate: ${_apDateController.text}');
-        print('Default Entry - cc: ${_ccController.text}');
-        print('Default Entry - cf: ${_clinicalFindingController.text}');
-        print('Default Entry - ge: ${_generalExaminationController.text}');
-        print('Default Entry - inv: ${_invController.text}');
-        print('Default Entry - Diagnosis: ${_diagnosisController.text}');
-        print(
-          'Default Entry - Name: ${widget.appointmentData?['Name'] ?? 'N/A'}',
-        );
-
         prescriptionDataList.add({
           'Date': _dateController.text,
           'POID': widget.appointmentData?['POID'] ?? 0, // Default to 0 if null
@@ -208,7 +183,6 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
           'ItemName': _itemNameController.text,
           'ContentName': _contentNameController.text,
           'Total': _totalController.text,
-          'Notes': _notesController.text,
           'Advice': _adviceController.text,
           'ApDate': _apDateController.text.isEmpty
               ? _dateController.text
@@ -222,19 +196,15 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
         });
       }
 
-      print('Final JSON Data being sent:');
       final String jsonData = JsonEncoder.withIndent(
         '  ',
       ).convert(prescriptionDataList);
-      print(jsonData);
       try {
         final response = await ApiHelper.request(
           'prescriptions/${widget.prescriptionNo}',
           method: 'PUT',
           body: jsonData,
         );
-
-        print(response);
 
         if (response != null &&
             response is Map &&
@@ -288,26 +258,6 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTextField(
-                      'Pt Name',
-                      TextEditingController(
-                        text: widget.appointmentData?['Name'] ?? 'N/A',
-                      ),
-                      'Patient Name',
-                      isRequired: false,
-                      readOnly: true,
-                    ),
-                    _buildTextField(
-                      'P No',
-                      TextEditingController(
-                        text:
-                            widget.appointmentData?['POID']?.toString() ??
-                            'N/A',
-                      ),
-                      'P No',
-                      isRequired: false,
-                      readOnly: true,
-                    ),
                     _buildTextField(
                       'General examination',
                       _generalExaminationController,
@@ -796,7 +746,6 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
                         'invention-list?search=$pattern',
                         method: 'GET',
                       );
-                      print(response);
                       if (response != null && response is List) {
                         return response.cast<Map<String, dynamic>>();
                       }

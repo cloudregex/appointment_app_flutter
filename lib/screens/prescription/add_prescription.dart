@@ -198,26 +198,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildTextField(
-                      'Pt Name',
-                      TextEditingController(
-                        text: widget.appointmentData?['Name'] ?? 'N/A',
-                      ),
-                      'Patient Name',
-                      isRequired: false,
-                      readOnly: true,
-                    ),
-                    _buildTextField(
-                      'P No',
-                      TextEditingController(
-                        text:
-                            widget.appointmentData?['POID']?.toString() ??
-                            'N/A',
-                      ),
-                      'P No',
-                      isRequired: false,
-                      readOnly: true,
-                    ),
-                    _buildTextField(
                       'General examination',
                       _generalExaminationController,
                       'Enter general examination',
@@ -710,7 +690,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                         'invention-list?search=$pattern',
                         method: 'GET',
                       );
-                      print(response);
                       if (response != null && response is List) {
                         return response.cast<Map<String, dynamic>>();
                       }
