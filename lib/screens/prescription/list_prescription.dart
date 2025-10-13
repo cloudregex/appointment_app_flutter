@@ -7,7 +7,7 @@ import 'edit_prescription.dart';
 class PrescriptionListScreen extends StatefulWidget {
   final Map<String, dynamic>? appointmentData;
 
- const PrescriptionListScreen({super.key, this.appointmentData});
+  const PrescriptionListScreen({super.key, this.appointmentData});
 
   @override
   _PrescriptionListScreenState createState() => _PrescriptionListScreenState();
@@ -30,19 +30,19 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
     _searchController.dispose();
     _debounce?.cancel();
     super.dispose();
- }
+  }
 
   Future<Map<String, dynamic>> _fetchPrescriptions({
     int page = 1,
     String? search,
   }) async {
     try {
-       String endpoint = 'prescriptions';
-       if (widget.appointmentData?['POID'] != null) {
-         endpoint += '?POID=${widget.appointmentData!['POID']}&page=$page';
-       } else {
-         endpoint += '?page=$page';
-       }
+      String endpoint = 'prescriptions';
+      if (widget.appointmentData?['POID'] != null) {
+        endpoint += '?POID=${widget.appointmentData!['POID']}&page=$page';
+      } else {
+        endpoint += '?page=$page';
+      }
 
       if (search != null && search.isNotEmpty) {
         endpoint += '&search=$search';
@@ -72,7 +72,7 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
   }
 
   @override
- Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.appointmentData?['Name'] ?? 'Prescriptions'}'),
@@ -86,8 +86,9 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      AddPrescriptionScreen(appointmentData: widget.appointmentData),
+                  builder: (context) => AddPrescriptionScreen(
+                    appointmentData: widget.appointmentData,
+                  ),
                 ),
               );
               if (result == true) {
@@ -174,11 +175,7 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.medication,
-                    color: Colors.grey[400],
-                    size: 64,
-                  ),
+                  Icon(Icons.medication, color: Colors.grey[400], size: 64),
                   const SizedBox(height: 16),
                   const Text(
                     'No prescription records found',
@@ -282,7 +279,8 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => EditPrescriptionScreen(
-                  prescription: prescriptionRecord,
+                  appointmentData: widget.appointmentData,
+                  prescriptionNo: prescriptionRecord['PrescriptionNo'],
                 ),
               ),
             );
@@ -301,7 +299,10 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      (prescriptionRecord['DrName'] ?? prescriptionRecord['Name'] ?? 'N/A').toString(),
+                      (prescriptionRecord['DrName'] ??
+                              prescriptionRecord['Name'] ??
+                              'N/A')
+                          .toString(),
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -380,7 +381,9 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => EditPrescriptionScreen(
-                              prescription: prescriptionRecord,
+                              appointmentData: widget.appointmentData,
+                              prescriptionNo:
+                                  prescriptionRecord['PrescriptionNo'],
                             ),
                           ),
                         );

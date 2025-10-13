@@ -9,7 +9,7 @@ class ApiHelper {
   static Future<dynamic> request(
     String endpoint, {
     String method = "GET",
-    Map<String, dynamic>? body,
+    dynamic body, // Changed type to dynamic to accept both Map and List
     Map<String, String>? headers,
   }) async {
     final url = Uri.parse("$baseUrl/$endpoint");
@@ -22,7 +22,6 @@ class ApiHelper {
 
     // Merge custom headers if any
     final mergedHeaders = {...defaultHeaders, ...?headers};
-
     http.Response response;
 
     switch (method.toUpperCase()) {
@@ -30,21 +29,21 @@ class ApiHelper {
         response = await http.post(
           url,
           headers: mergedHeaders,
-          body: jsonEncode(body),
+          body: body is String ? body : jsonEncode(body),
         );
         break;
       case "PUT":
         response = await http.put(
           url,
           headers: mergedHeaders,
-          body: jsonEncode(body),
+          body: body is String ? body : jsonEncode(body),
         );
         break;
       case "DELETE":
         response = await http.delete(
           url,
           headers: mergedHeaders,
-          body: jsonEncode(body),
+          body: body is String ? body : jsonEncode(body),
         );
         break;
       default: // GET

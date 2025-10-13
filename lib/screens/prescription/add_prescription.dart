@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../helper/api_helper.dart';
@@ -45,18 +46,13 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
   final TextEditingController _historyController = TextEditingController();
   final TextEditingController _itemNameController = TextEditingController();
   final TextEditingController _contentNameController = TextEditingController();
-  final TextEditingController _totalController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _adviceController = TextEditingController();
   final TextEditingController _apDateController = TextEditingController();
   final TextEditingController _ccController = TextEditingController();
-  final TextEditingController _cfController = TextEditingController();
-  final TextEditingController _geController = TextEditingController();
   final TextEditingController _invController = TextEditingController();
   final TextEditingController _generalExaminationController =
       TextEditingController();
-  final TextEditingController _weightController = TextEditingController();
-  final TextEditingController _bpController = TextEditingController();
   final TextEditingController _clinicalFindingController =
       TextEditingController();
   final TextEditingController _diagnosisController = TextEditingController();
@@ -91,52 +87,67 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
         _isLoading = true;
       });
 
-      final Map<String, dynamic> data = {
-        'Date': _dateController.text,
-        'POID': widget
-            .appointmentData?['POID'], // Using the appointment data directly
-        'History': _historyController.text,
-        'ItemName': _itemNameController.text,
-        'ContentName': _contentNameController.text,
-        'Total': _totalController.text,
-        'Notes': _notesController.text,
-        'Advice': _adviceController.text,
-        'ApDate': _apDateController.text.isEmpty
-            ? _dateController.text
-            : _apDateController.text,
-        'cc': _ccController.text,
-        'cf': _cfController.text,
-        'ge': _geController.text,
-        'inv': _invController.text,
-        'GeneralExamination': _generalExaminationController.text,
-        'Weight': _weightController.text,
-        'BP': _bpController.text,
-        'ClinicalFinding': _clinicalFindingController.text,
-        'Diagnosis': _diagnosisController.text,
-        'Name': widget.appointmentData?['Name'] ?? 'N/A',
-        'Medicines': _medicineEntries
-            .where(
-              (entry) =>
-                  entry.medicineNameController.text.isNotEmpty ||
-                  entry.dosageController.text.isNotEmpty ||
-                  entry.durationController.text.isNotEmpty,
-            )
-            .map(
-              (e) => {
-                'medicineId': e.medicineId,
-                'medicineName': e.medicineNameController.text,
-                'dosage': e.dosageController.text,
-                'duration': e.durationController.text,
-              },
-            )
-            .toList(),
-      };
+      final List<Map<String, dynamic>> prescriptionDataList = [];
 
+      for (var entry in _medicineEntries) {
+        if (entry.medicineNameController.text.isNotEmpty) {
+          prescriptionDataList.add({
+            'Date': _dateController.text,
+            'POID': widget.appointmentData?['POID'],
+            'History': _historyController.text,
+            'ItemName': entry.medicineNameController.text,
+            'Notes': entry.dosageController.text,
+            'Advice': _adviceController.text,
+            'ApDate': _apDateController.text.isEmpty
+                ? _dateController.text
+                : _apDateController.text,
+            'cc': _ccController.text,
+            'cf': _clinicalFindingController.text,
+            'ge': _generalExaminationController.text,
+            'inv': _invController.text,
+            'Diagnosis': _diagnosisController.text,
+            'Name': widget.appointmentData?['Name'] ?? 'N/A',
+            'medicineId': entry.medicineId,
+            'ContentName': entry.dosageController.text,
+            'Total': entry.durationController.text,
+          });
+        }
+      }
+
+      // If no medicines are added, add at least one default entry
+      if (prescriptionDataList.isEmpty) {
+        prescriptionDataList.add({
+          'Date': _dateController.text,
+          'POID': widget.appointmentData?['POID'] ?? 0, // Default to 0 if null
+          'History': _historyController.text,
+          'ItemName': _itemNameController.text,
+          'ContentName': _contentNameController.text,
+          'Notes': _notesController.text,
+          'Advice': _adviceController.text,
+          'ApDate': _apDateController.text.isEmpty
+              ? _dateController.text
+              : _apDateController.text,
+          'cc': _ccController.text,
+          'cf': _clinicalFindingController.text,
+          'ge': _generalExaminationController.text,
+          'inv': _invController.text,
+          'Diagnosis': _diagnosisController.text,
+          'Name': widget.appointmentData?['Name'] ?? 'N/A',
+          'medicineId': 0, // Default to 0 instead of null
+          'dosage': '', // Default to empty string instead of null
+          'duration': '', // Default to empty string instead of null
+        });
+      }
+
+      // ✅ Properly encode data before sending
+      final String jsonData = JsonEncoder.withIndent(
+        '  ',
+      ).convert(prescriptionDataList);
       try {
         final response = await ApiHelper.request(
           'prescriptions',
           method: 'POST',
-          body: data,
+          body: jsonData,
         );
         if (response != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -149,7 +160,10 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                response?['message'] ?? 'Failed to create prescription record.',
+                (response is Map)
+                    ? (response['message'] ??
+                          'Failed to create prescription record.')
+                    : 'Failed to create prescription record.',
               ),
             ),
           );
@@ -207,18 +221,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                       'General examination',
                       _generalExaminationController,
                       'Enter general examination',
-                      isRequired: false,
-                    ),
-                    _buildTextField(
-                      'Weight',
-                      _weightController,
-                      'Enter weight',
-                      isRequired: false,
-                    ),
-                    _buildTextField(
-                      'BP',
-                      _bpController,
-                      'Enter BP',
                       isRequired: false,
                     ),
                     _buildDateField(), // Date field
@@ -402,10 +404,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
         return const Icon(Icons.numbers);
       case 'general examination':
         return const Icon(Icons.medical_information);
-      case 'weight':
-        return const Icon(Icons.scale);
-      case 'bp':
-        return const Icon(Icons.monitor_heart);
       case 'clinical finding':
         return const Icon(Icons.find_in_page);
       case 'diagnosis':
@@ -605,6 +603,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                       if (response != null && response is List) {
                         return response.cast<Map<String, dynamic>>();
                       }
+                      return null;
                     },
                     itemBuilder: (context, suggestion) {
                       return ListTile(
