@@ -153,13 +153,13 @@ class _AddTPRScreenState extends State<AddTPRScreen> {
                   const SizedBox(height: 20),
                   _buildTextField(
                     controller: _cController,
-                    labelText: 'Condition',
+                    labelText: 'DSL',
                     icon: Icons.notes,
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
                     controller: _aController,
-                    labelText: 'Advice',
+                    labelText: 'SPO2',
                     icon: Icons.lightbulb,
                   ),
                 ]),

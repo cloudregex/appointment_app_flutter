@@ -332,17 +332,17 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
                 ),
                 _buildDetailRow(
                   Icons.medication_liquid,
-                  'Item Name',
+                  'Medicine Name',
                   (prescriptionRecord['ItemName'] ?? 'N/A').toString(),
                 ),
                 _buildDetailRow(
                   Icons.description,
-                  'Content Name',
+                  'Dosage',
                   (prescriptionRecord['ContentName'] ?? 'N/A').toString(),
                 ),
                 _buildDetailRow(
                   Icons.note_alt_outlined,
-                  'Notes',
+                  'Diagnosis',
                   (prescriptionRecord['Notes'] ?? 'N/A').toString(),
                 ),
                 _buildDetailRow(

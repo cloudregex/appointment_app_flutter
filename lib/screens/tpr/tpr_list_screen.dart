@@ -122,8 +122,8 @@ class _TPRListScreenState extends State<TPRListScreen> {
                           'Output (ml)',
                           record['op'],
                         ),
-                        _buildDetailRow(Icons.notes, 'Condition', record['c']),
-                        _buildDetailRow(Icons.lightbulb, 'Advice', record['a']),
+                        _buildDetailRow(Icons.notes, 'DSL', record['c']),
+                        _buildDetailRow(Icons.lightbulb, 'SPO2', record['a']),
                         const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
