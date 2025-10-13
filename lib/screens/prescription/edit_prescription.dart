@@ -613,103 +613,119 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Add Medicine'),
-          content: SingleChildScrollView(
-            child: Form(
-              key: _formBottomSheetKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TypeAheadField<Map<String, dynamic>>(
-                    builder: (context, controller, focusNode) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: const Text('Add Medicine'),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: _formBottomSheetKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TypeAheadField<Map<String, dynamic>>(
+                        controller:
+                            _tempMedicineNameController, // ✅ Use your own controller
+                        focusNode: FocusNode(),
+                        builder: (context, controller, focusNode) {
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: const InputDecoration(
+                              labelText: 'Medicine Name',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Medicine name is required';
+                              }
+                              return null;
+                            },
+                          );
+                        },
+                        suggestionsCallback: (pattern) async {
+                          final response = await ApiHelper.request(
+                            'item-list?search=$pattern',
+                            method: 'GET',
+                          );
+                          if (response != null && response is List) {
+                            return response.cast<Map<String, dynamic>>();
+                          }
+                          return [];
+                        },
+                        itemBuilder: (context, suggestion) {
+                          return ListTile(
+                            title: Text(suggestion['ItemName'] ?? ''),
+                          );
+                        },
+                        onSelected: (suggestion) {
+                          setStateDialog(() {
+                            _tempMedicineNameController.text =
+                                suggestion['ItemName'] ?? '';
+                            _tempMedicineId = suggestion['ItemID'];
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _tempDosageController,
                         decoration: const InputDecoration(
-                          labelText: 'Medicine Name',
+                          labelText: 'Dosage',
                           border: OutlineInputBorder(),
                         ),
-                      );
-                    },
-                    suggestionsCallback: (pattern) async {
-                      final response = await ApiHelper.request(
-                        'item-list?search=$pattern',
-                        method: 'GET',
-                      );
-                      if (response != null && response is List) {
-                        return response.cast<Map<String, dynamic>>();
-                      }
-                    },
-                    itemBuilder: (context, suggestion) {
-                      return ListTile(
-                        title: Text(suggestion['ItemName'] ?? ''),
-                      );
-                    },
-                    onSelected: (suggestion) {
-                      _tempMedicineNameController.text = suggestion['ItemName'];
-                      _tempMedicineId = suggestion['ItemID'];
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _tempDosageController,
-                    decoration: const InputDecoration(
-                      labelText: 'Dosage',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Dosage is required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _tempDurationController,
-                    decoration: const InputDecoration(
-                      labelText: 'Duration',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Duration is required';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (_formBottomSheetKey.currentState!.validate()) {
-                  setState(() {
-                    _medicineEntries.add(
-                      MedicineEntry(
-                        medicineName: _tempMedicineNameController.text,
-                        dosage: _tempDosageController.text,
-                        duration: _tempDurationController.text,
-                        medicineId: _tempMedicineId,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Dosage is required';
+                          }
+                          return null;
+                        },
                       ),
-                    );
-                  });
-
-                  Navigator.pop(context); // Close the dialog
-                }
-              },
-              child: const Text('Add'),
-            ),
-          ],
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _tempDurationController,
+                        decoration: const InputDecoration(
+                          labelText: 'Duration',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Duration is required';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formBottomSheetKey.currentState!.validate()) {
+                      setState(() {
+                        _medicineEntries.add(
+                          MedicineEntry(
+                            medicineName: _tempMedicineNameController.text,
+                            dosage: _tempDosageController.text,
+                            duration: _tempDurationController.text,
+                            medicineId: _tempMedicineId,
+                          ),
+                        );
+                      });
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Text('Add'),
+                ),
+              ],
+            );
+          },
         );
       },
     );

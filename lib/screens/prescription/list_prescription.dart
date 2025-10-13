@@ -352,17 +352,17 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
                 ),
                 _buildDetailRow(
                   Icons.psychology_outlined,
-                  'CC',
+                  'Chief Complaints',
                   (prescriptionRecord['cc'] ?? 'N/A').toString(),
                 ),
                 _buildDetailRow(
                   Icons.monitor_heart_outlined,
-                  'CF',
+                  'Clinical Findings',
                   (prescriptionRecord['cf'] ?? 'N/A').toString(),
                 ),
                 _buildDetailRow(
                   Icons.favorite_outlined,
-                  'GE',
+                  'General Examination',
                   (prescriptionRecord['ge'] ?? 'N/A').toString(),
                 ),
                 _buildDetailRow(
