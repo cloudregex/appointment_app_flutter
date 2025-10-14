@@ -433,7 +433,7 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
                         vertical: 15,
                       ),
                     ),
-                    child: const Text('Save Discharge Card'),
+                    child: const Text('Save Discharge'),
                   ),
                 ),
               ],

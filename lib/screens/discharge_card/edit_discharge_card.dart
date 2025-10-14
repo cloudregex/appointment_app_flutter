@@ -545,7 +545,7 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
                         vertical: 15,
                       ),
                     ),
-                    child: const Text('Update Discharge Card'),
+                    child: const Text('Update Discharge'),
                   ),
                 ),
               ],
