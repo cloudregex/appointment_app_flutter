@@ -42,8 +42,6 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
   final TextEditingController _mlcNoController = TextEditingController();
   String _inchargeDoctorName = '';
   String _rmoDoctorName = '';
-  final TextEditingController _dr1Controller = TextEditingController();
-  final TextEditingController _dr2Controller = TextEditingController();
   final TextEditingController _pdController = TextEditingController();
   final TextEditingController _tempController = TextEditingController();
   final TextEditingController _prController = TextEditingController();
@@ -92,10 +90,8 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
     _drController.text = widget.dischargeRecord['DR']?.toString() ?? '';
     _otNoteController.text = widget.dischargeRecord['OTNote']?.toString() ?? '';
     _mlcNoController.text = widget.dischargeRecord['MLCNo']?.toString() ?? '';
-    _dr1Controller.text = widget.dischargeRecord['Dr1']?.toString() ?? '';
-    _dr2Controller.text = widget.dischargeRecord['Dr2']?.toString() ?? '';
-    _inchargeDoctorName = widget.dischargeRecord['dr1']?.toString() ?? '';
-    _rmoDoctorName = widget.dischargeRecord['dr2']?.toString() ?? '';
+    _inchargeDoctorName = widget.dischargeRecord['Dr1']?.toString() ?? '';
+    _rmoDoctorName = widget.dischargeRecord['Dr2']?.toString() ?? '';
     _pdController.text = widget.dischargeRecord['PD']?.toString() ?? '';
     _tempController.text = widget.dischargeRecord['Temp']?.toString() ?? '';
     _prController.text = widget.dischargeRecord['PR']?.toString() ?? '';
@@ -191,8 +187,6 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
     _drController.dispose();
     _otNoteController.dispose();
     _mlcNoController.dispose();
-    _dr1Controller.dispose();
-    _dr2Controller.dispose();
     _pdController.dispose();
     _tempController.dispose();
     _prController.dispose();
@@ -323,9 +317,7 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Edit Discharge Card - ${widget.patient['Name']?.toString()}',
-        ),
+        title: Text('Edit Discharge - ${widget.patient['Name']?.toString()}'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -380,7 +372,6 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
                       widget.dischargeRecord['Dr1']?.toString() ?? '',
                   onItemSelected: (doctor) {
                     setState(() {
-                      _dr1Controller.text = doctor['DrOID'].toString();
                       _inchargeDoctorName = doctor['Name']?.toString() ?? '';
                     });
                   },
@@ -395,7 +386,6 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
                       widget.dischargeRecord['Dr2']?.toString() ?? '',
                   onItemSelected: (doctor) {
                     setState(() {
-                      _dr2Controller.text = doctor['DrOID'].toString();
                       _rmoDoctorName = doctor['Name']?.toString() ?? '';
                     });
                   },

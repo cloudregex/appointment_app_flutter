@@ -208,9 +208,7 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Add Discharge Card - ${widget.patient['Name']?.toString()}',
-        ),
+        title: Text('Add Discharge - ${widget.patient['Name']?.toString()}'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
