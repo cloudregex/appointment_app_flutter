@@ -68,55 +68,57 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
 
   void _initializeFormFields() {
     // Initialize controllers with existing data
-    _doaController.text = widget.dischargeRecord['doa'] ?? '';
-    _dodController.text = widget.dischargeRecord['dod'] ?? '';
-    _diagnosisController.text = widget.dischargeRecord['daignosis'] ?? '';
-    _hisController.text = widget.dischargeRecord['his'] ?? '';
+    _doaController.text = widget.dischargeRecord['DOA']?.toString() ?? '';
+    _dodController.text = widget.dischargeRecord['DOD']?.toString() ?? '';
+    _diagnosisController.text =
+        widget.dischargeRecord['Daignosis']?.toString() ?? '';
+    _hisController.text = widget.dischargeRecord['His']?.toString() ?? '';
     _investigationController.text =
-        widget.dischargeRecord['investigation'] ?? '';
-    _adviceController.text = widget.dischargeRecord['advice'] ?? '';
-    _followupController.text = widget.dischargeRecord['followup'] ?? '';
-    _t1Controller.text = widget.dischargeRecord['t1'] ?? '';
-    _t2Controller.text = widget.dischargeRecord['t2'] ?? '';
-    _tgController.text = widget.dischargeRecord['tg'] ?? '';
-    _siController.text = widget.dischargeRecord['si'] ?? '';
-    _aController.text = widget.dischargeRecord['a'] ?? '';
-    _ccController.text = widget.dischargeRecord['cc'] ?? '';
-    _cithController.text = widget.dischargeRecord['cith'] ?? '';
-    _codController.text = widget.dischargeRecord['cod'] ?? '';
-    _drController.text = widget.dischargeRecord['dr'] ?? '';
-    _otNoteController.text = widget.dischargeRecord['otNote'] ?? '';
-    _mlcNoController.text = widget.dischargeRecord['mlcNo'] ?? '';
-    _dr1Controller.text = widget.dischargeRecord['dr1'] ?? '';
-    _dr2Controller.text = widget.dischargeRecord['dr2'] ?? '';
-    _pdController.text = widget.dischargeRecord['pd'] ?? '';
-    _tempController.text = widget.dischargeRecord['temp'] ?? '';
-    _prController.text = widget.dischargeRecord['pr'] ?? '';
-    _rrController.text = widget.dischargeRecord['rr'] ?? '';
-    _bpController.text = widget.dischargeRecord['bp'] ?? '';
-    _pallorController.text = widget.dischargeRecord['pallor'] ?? '';
-    _cynController.text = widget.dischargeRecord['cyn'] ?? '';
-    _cluController.text = widget.dischargeRecord['clu'] ?? '';
-    _spo2Controller.text = widget.dischargeRecord['spo2'] ?? '';
-    _ictController.text = widget.dischargeRecord['ict'] ?? '';
-    _adeController.text = widget.dischargeRecord['ade'] ?? '';
-    _edemaController.text = widget.dischargeRecord['edema'] ?? '';
-    _cnsController.text = widget.dischargeRecord['cns'] ?? '';
-    _cvsController.text = widget.dischargeRecord['cvs'] ?? '';
-    _rsController.text = widget.dischargeRecord['rs'] ?? '';
+        widget.dischargeRecord['Investigation']?.toString() ?? '';
+    _adviceController.text = widget.dischargeRecord['Advice']?.toString() ?? '';
+    _followupController.text =
+        widget.dischargeRecord['Followup']?.toString() ?? '';
+    _t1Controller.text = widget.dischargeRecord['T1']?.toString() ?? '';
+    _t2Controller.text = widget.dischargeRecord['T2']?.toString() ?? '';
+    _tgController.text = widget.dischargeRecord['TG']?.toString() ?? '';
+    _siController.text = widget.dischargeRecord['SI']?.toString() ?? '';
+    _aController.text = widget.dischargeRecord['a']?.toString() ?? '';
+    _ccController.text = widget.dischargeRecord['cc']?.toString() ?? '';
+    _cithController.text = widget.dischargeRecord['CITH']?.toString() ?? '';
+    _codController.text = widget.dischargeRecord['COD']?.toString() ?? '';
+    _drController.text = widget.dischargeRecord['DR']?.toString() ?? '';
+    _otNoteController.text = widget.dischargeRecord['OTNote']?.toString() ?? '';
+    _mlcNoController.text = widget.dischargeRecord['MLCNo']?.toString() ?? '';
+    _dr1Controller.text = widget.dischargeRecord['Dr1']?.toString() ?? '';
+    _dr2Controller.text = widget.dischargeRecord['Dr2']?.toString() ?? '';
+    _pdController.text = widget.dischargeRecord['PD']?.toString() ?? '';
+    _tempController.text = widget.dischargeRecord['Temp']?.toString() ?? '';
+    _prController.text = widget.dischargeRecord['PR']?.toString() ?? '';
+    _rrController.text = widget.dischargeRecord['RR']?.toString() ?? '';
+    _bpController.text = widget.dischargeRecord['BP']?.toString() ?? '';
+    _pallorController.text = widget.dischargeRecord['PALLOR']?.toString() ?? '';
+    _cynController.text = widget.dischargeRecord['CYN']?.toString() ?? '';
+    _cluController.text = widget.dischargeRecord['CLU']?.toString() ?? '';
+    _spo2Controller.text = widget.dischargeRecord['SPO2']?.toString() ?? '';
+    _ictController.text = widget.dischargeRecord['ICT']?.toString() ?? '';
+    _adeController.text = widget.dischargeRecord['ADE']?.toString() ?? '';
+    _edemaController.text = widget.dischargeRecord['EDEMA']?.toString() ?? '';
+    _cnsController.text = widget.dischargeRecord['CNS']?.toString() ?? '';
+    _cvsController.text = widget.dischargeRecord['CVS']?.toString() ?? '';
+    _rsController.text = widget.dischargeRecord['RS']?.toString() ?? '';
 
     // Parse dates if they exist
-    if (widget.dischargeRecord['doa'] != null &&
-        widget.dischargeRecord['doa'] != '') {
+    if (widget.dischargeRecord['DOA'] != null &&
+        widget.dischargeRecord['DOA'] != '') {
       try {
-        DateTime doa = DateTime.parse(widget.dischargeRecord['doa']);
+        DateTime doa = DateTime.parse(widget.dischargeRecord['DOA'].toString());
         _selectedDOA = doa;
         _doaController.text = '${doa.day}/${doa.month}/${doa.year}';
       } catch (e) {
         // If parsing fails, try to handle Y-m-d format specifically
         try {
           // Handle the case where the date is in Y-m-d format
-          String dateStr = widget.dischargeRecord['doa'];
+          String dateStr = widget.dischargeRecord['DOA'].toString();
           if (dateStr.contains('-')) {
             List<String> parts = dateStr.split('-');
             if (parts.length == 3) {
@@ -134,17 +136,17 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
       }
     }
 
-    if (widget.dischargeRecord['dod'] != null &&
-        widget.dischargeRecord['dod'] != '') {
+    if (widget.dischargeRecord['DOD'] != null &&
+        widget.dischargeRecord['DOD'] != '') {
       try {
-        DateTime dod = DateTime.parse(widget.dischargeRecord['dod']);
+        DateTime dod = DateTime.parse(widget.dischargeRecord['DOD'].toString());
         _selectedDOD = dod;
         _dodController.text = '${dod.day}/${dod.month}/${dod.year}';
       } catch (e) {
         // If parsing fails, try to handle Y-m-d format specifically
         try {
           // Handle the case where the date is in Y-m-d format
-          String dateStr = widget.dischargeRecord['dod'];
+          String dateStr = widget.dischargeRecord['DOD'].toString();
           if (dateStr.contains('-')) {
             List<String> parts = dateStr.split('-');
             if (parts.length == 3) {
@@ -274,7 +276,7 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
         };
 
         final response = await ApiHelper.request(
-          'discharge-card/${widget.dischargeRecord['DisOID']}', // Assuming there's an ID field
+          'discharge-card/${widget.dischargeRecord['DisOID']}',
           method: 'PUT',
           body: data,
         );
@@ -492,17 +494,19 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
                 ),
                 _buildTextFormField(controller: _rsController, labelText: 'RS'),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _updateForm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _updateForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30,
+                        vertical: 15,
+                      ),
                     ),
+                    child: const Text('Update Discharge Card'),
                   ),
-                  child: const Text('Update Discharge Card'),
                 ),
               ],
             ),

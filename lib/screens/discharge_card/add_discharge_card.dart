@@ -381,17 +381,19 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
                 ),
                 _buildTextFormField(controller: _rsController, labelText: 'RS'),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30,
+                        vertical: 15,
+                      ),
                     ),
+                    child: const Text('Save Discharge Card'),
                   ),
-                  child: const Text('Save Discharge Card'),
                 ),
               ],
             ),
