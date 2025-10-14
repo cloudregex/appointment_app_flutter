@@ -347,6 +347,26 @@ class _TreatmentListScreenState extends State<TreatmentListScreen> {
                   'CVS',
                   (treatmentRecord['Cvs'] ?? 'N/A').toString(),
                 ),
+                _buildDetailRow(
+                  Icons.monitor_heart_outlined,
+                  'PA',
+                  (treatmentRecord['Pa'] ?? 'N/A').toString(),
+                ),
+                _buildDetailRow(
+                  Icons.monitor_heart_outlined,
+                  'BSL',
+                  (treatmentRecord['Bsl'] ?? 'N/A').toString(),
+                ),
+                _buildDetailRow(
+                  Icons.monitor_heart_outlined,
+                  'GC',
+                  (treatmentRecord['Gc'] ?? 'N/A').toString(),
+                ),
+                _buildDetailRow(
+                  Icons.monitor_heart_outlined,
+                  'SPO2',
+                  (treatmentRecord['Spo2'] ?? 'N/A').toString(),
+                ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,

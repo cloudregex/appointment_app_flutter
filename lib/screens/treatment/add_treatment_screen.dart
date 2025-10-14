@@ -22,6 +22,10 @@ class _AddTreatmentScreenState extends State<AddTreatmentScreen> {
   final TextEditingController _rsController = TextEditingController();
   final TextEditingController _cnsController = TextEditingController();
   final TextEditingController _cvsController = TextEditingController();
+  final TextEditingController _paController = TextEditingController();
+  final TextEditingController _bslController = TextEditingController();
+  final TextEditingController _gcController = TextEditingController();
+  final TextEditingController _spo2Controller = TextEditingController();
 
   DateTime? _selectedDate;
   String _doctorName = '';
@@ -71,6 +75,10 @@ class _AddTreatmentScreenState extends State<AddTreatmentScreen> {
         'rs': _rsController.text,
         'cns': _cnsController.text,
         'cvs': _cvsController.text,
+        'pa': _paController.text,
+        'bsl': _bslController.text,
+        'gc': _gcController.text,
+        'spo2': _spo2Controller.text,
       };
       try {
         final response = await ApiHelper.request(
@@ -232,6 +240,50 @@ class _AddTreatmentScreenState extends State<AddTreatmentScreen> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         prefixIcon: const Icon(Icons.favorite),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _paController,
+                      decoration: InputDecoration(
+                        labelText: 'PA',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        prefixIcon: const Icon(Icons.monitor_heart),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _bslController,
+                      decoration: InputDecoration(
+                        labelText: 'BSL',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        prefixIcon: const Icon(Icons.monitor_heart),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _gcController,
+                      decoration: InputDecoration(
+                        labelText: 'GC',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        prefixIcon: const Icon(Icons.monitor_heart),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _spo2Controller,
+                      decoration: InputDecoration(
+                        labelText: 'SPO2',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        prefixIcon: const Icon(Icons.monitor_heart),
                       ),
                     ),
                     const SizedBox(height: 32),

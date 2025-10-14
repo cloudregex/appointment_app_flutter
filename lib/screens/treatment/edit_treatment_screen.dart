@@ -27,6 +27,10 @@ class _EditTreatmentScreenState extends State<EditTreatmentScreen> {
   final TextEditingController _rsController = TextEditingController();
   final TextEditingController _cnsController = TextEditingController();
   final TextEditingController _cvsController = TextEditingController();
+  final TextEditingController _paController = TextEditingController();
+  final TextEditingController _bslController = TextEditingController();
+  final TextEditingController _gcController = TextEditingController();
+  final TextEditingController _spo2Controller = TextEditingController();
 
   DateTime? _selectedDate;
   String _doctorName = '';
@@ -44,6 +48,10 @@ class _EditTreatmentScreenState extends State<EditTreatmentScreen> {
     _rsController.text = widget.treatmentRecord['Rs'] ?? '';
     _cnsController.text = widget.treatmentRecord['Cns'] ?? '';
     _cvsController.text = widget.treatmentRecord['Cvs'] ?? '';
+    _paController.text = widget.treatmentRecord['Pa'] ?? '';
+    _bslController.text = widget.treatmentRecord['Bsl'] ?? '';
+    _gcController.text = widget.treatmentRecord['Gc'] ?? '';
+    _spo2Controller.text = widget.treatmentRecord['Spo2'] ?? '';
 
     // Parse date from the record
     String dateString = (widget.treatmentRecord['Date'] ?? '').toString();
@@ -96,6 +104,10 @@ class _EditTreatmentScreenState extends State<EditTreatmentScreen> {
         'rs': _rsController.text,
         'cns': _cnsController.text,
         'cvs': _cvsController.text,
+        'pa': _paController.text,
+        'bsl': _bslController.text,
+        'gc': _gcController.text,
+        'spo2': _spo2Controller.text,
       };
       try {
         var id = widget.treatmentRecord['TCOID'];
@@ -328,6 +340,50 @@ class _EditTreatmentScreenState extends State<EditTreatmentScreen> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         prefixIcon: const Icon(Icons.favorite),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _paController,
+                      decoration: InputDecoration(
+                        labelText: 'PA',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        prefixIcon: const Icon(Icons.monitor_heart),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _bslController,
+                      decoration: InputDecoration(
+                        labelText: 'BSL',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        prefixIcon: const Icon(Icons.monitor_heart),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _gcController,
+                      decoration: InputDecoration(
+                        labelText: 'GC',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        prefixIcon: const Icon(Icons.monitor_heart),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _spo2Controller,
+                      decoration: InputDecoration(
+                        labelText: 'SPO2',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        prefixIcon: const Icon(Icons.monitor_heart),
                       ),
                     ),
                     const SizedBox(height: 32),
