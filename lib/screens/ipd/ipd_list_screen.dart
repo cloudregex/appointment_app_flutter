@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../tpr/tpr_list_screen.dart';
 import '../drug_chart/list_drug_chart.dart';
 import '../treatment/list_treatment_screen.dart';
+import '../discharge_card/list_discharge_card.dart';
 import 'dart:async';
 import '../../helper/api_helper.dart';
 
@@ -309,6 +310,47 @@ class _IPDListScreenState extends State<IPDListScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                DischargeCardListScreen(patient: ipdRecord),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 10,
+                        ),
+                        backgroundColor: Colors.purple.withOpacity(
+                          0.9,
+                        ), // Different color for discharge card
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 2,
+                      ),
+                      child: const Row(
+                        children: [
+                          Text(
+                            'Discharge',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(Icons.assignment_outlined, size: 14),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 4,
+                    ), // Add some spacing between buttons
                     ElevatedButton(
                       onPressed: () {
                         Navigator.push(
