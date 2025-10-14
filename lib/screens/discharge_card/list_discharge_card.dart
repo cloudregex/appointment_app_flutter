@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../helper/api_helper.dart';
 import 'add_discharge_card.dart';
 import 'edit_discharge_card.dart';
+import 'package:intl/intl.dart';
 
 class DischargeCardListScreen extends StatefulWidget {
   final Map<String, dynamic> patient;
@@ -243,7 +244,7 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        (dischargeRecord['daignosis'] ?? 'N/A').toString(),
+                        (dischargeRecord['Daignosis'] ?? 'N/A').toString(),
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -254,9 +255,7 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                       ),
                     ),
                     Text(
-                      (dischargeRecord['dod'] ?? 'N/A').toString().split(
-                        ' ',
-                      )[0],
+                      _formatDate(dischargeRecord['DOD']),
                       style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
@@ -265,17 +264,17 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                 _buildDetailRow(
                   Icons.confirmation_number_outlined,
                   'IPD No',
-                  (dischargeRecord['ipdNo'] ?? 'N/A').toString(),
+                  (dischargeRecord['IpdNo'] ?? 'N/A').toString(),
                 ),
                 _buildDetailRow(
                   Icons.date_range_outlined,
                   'Date of Admission',
-                  (dischargeRecord['doa'] ?? 'N/A').toString(),
+                  _formatDate(dischargeRecord['DOA']),
                 ),
                 _buildDetailRow(
                   Icons.date_range_outlined,
                   'Date of Discharge',
-                  (dischargeRecord['dod'] ?? 'N/A').toString(),
+                  _formatDate(dischargeRecord['DOD']),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -330,7 +329,7 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                         if (confirm == true) {
                           try {
                             final response = await ApiHelper.request(
-                              'discharge-card/${dischargeRecord['DisOID']?.toString()}',
+                              'discharge-card/${dischargeRecord['DisOID']?.toString() ?? ''}',
                               method: 'DELETE',
                             );
                             if (response != null &&
@@ -398,5 +397,26 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
         ],
       ),
     );
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return 'N/A';
+
+    try {
+      DateTime date;
+      if (dateString.contains(' ')) {
+        // Extract only date part if time exists
+        String datePart = dateString.split(' ')[0];
+        date = DateTime.parse(datePart);
+      } else {
+        date = DateTime.parse(dateString);
+      }
+
+      // ✅ Format as "15-10-2025"
+      return DateFormat('dd-MM-yyyy').format(date);
+    } catch (e) {
+      // If parsing fails, return original value
+      return dateString;
+    }
   }
 }
