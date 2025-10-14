@@ -350,22 +350,22 @@ class _TreatmentListScreenState extends State<TreatmentListScreen> {
                 _buildDetailRow(
                   Icons.monitor_heart_outlined,
                   'PA',
-                  (treatmentRecord['Pa'] ?? 'N/A').toString(),
+                  (treatmentRecord['PA'] ?? 'N/A').toString(),
                 ),
                 _buildDetailRow(
                   Icons.monitor_heart_outlined,
                   'BSL',
-                  (treatmentRecord['Bsl'] ?? 'N/A').toString(),
+                  (treatmentRecord['BSL'] ?? 'N/A').toString(),
                 ),
                 _buildDetailRow(
                   Icons.monitor_heart_outlined,
-                  'GC',
-                  (treatmentRecord['Gc'] ?? 'N/A').toString(),
+                  'General Condition',
+                  (treatmentRecord['GC'] ?? 'N/A').toString(),
                 ),
                 _buildDetailRow(
                   Icons.monitor_heart_outlined,
                   'SPO2',
-                  (treatmentRecord['Spo2'] ?? 'N/A').toString(),
+                  (treatmentRecord['SPO2'] ?? 'N/A').toString(),
                 ),
                 const SizedBox(height: 16),
                 Row(

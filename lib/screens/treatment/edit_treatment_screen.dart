@@ -368,7 +368,7 @@ class _EditTreatmentScreenState extends State<EditTreatmentScreen> {
                     TextFormField(
                       controller: _gcController,
                       decoration: InputDecoration(
-                        labelText: 'GC',
+                        labelText: 'General Condition',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
