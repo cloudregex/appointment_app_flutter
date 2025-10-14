@@ -19,8 +19,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   int _currentPage = 1;
-  DateTime? _startDate;
-  DateTime? _endDate;
+  DateTime? _startDate = DateTime.now();
+  DateTime? _endDate = DateTime.now();
 
   @override
   void initState() {
@@ -46,6 +46,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
     DateTime? endDate,
   }) async {
     try {
+      print(startDate);
       String endpoint = 'appointments?page=$page';
       if (search != null && search.isNotEmpty) {
         endpoint += '&search=$search';
