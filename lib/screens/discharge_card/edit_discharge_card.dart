@@ -113,7 +113,24 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
         _selectedDOA = doa;
         _doaController.text = '${doa.day}/${doa.month}/${doa.year}';
       } catch (e) {
-        // Handle invalid date format
+        // If parsing fails, try to handle Y-m-d format specifically
+        try {
+          // Handle the case where the date is in Y-m-d format
+          String dateStr = widget.dischargeRecord['doa'];
+          if (dateStr.contains('-')) {
+            List<String> parts = dateStr.split('-');
+            if (parts.length == 3) {
+              int year = int.parse(parts[0]);
+              int month = int.parse(parts[1]);
+              int day = int.parse(parts[2]);
+              DateTime doa = DateTime(year, month, day);
+              _selectedDOA = doa;
+              _doaController.text = '${doa.day}/${doa.month}/${doa.year}';
+            }
+          }
+        } catch (e2) {
+          // Handle invalid date format
+        }
       }
     }
 
@@ -124,7 +141,24 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
         _selectedDOD = dod;
         _dodController.text = '${dod.day}/${dod.month}/${dod.year}';
       } catch (e) {
-        // Handle invalid date format
+        // If parsing fails, try to handle Y-m-d format specifically
+        try {
+          // Handle the case where the date is in Y-m-d format
+          String dateStr = widget.dischargeRecord['dod'];
+          if (dateStr.contains('-')) {
+            List<String> parts = dateStr.split('-');
+            if (parts.length == 3) {
+              int year = int.parse(parts[0]);
+              int month = int.parse(parts[1]);
+              int day = int.parse(parts[2]);
+              DateTime dod = DateTime(year, month, day);
+              _selectedDOD = dod;
+              _dodController.text = '${dod.day}/${dod.month}/${dod.year}';
+            }
+          }
+        } catch (e2) {
+          // Handle invalid date format
+        }
       }
     }
   }
@@ -198,8 +232,12 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
           'name': widget.patient['Name']?.toString() ?? '',
           'poid': widget.patient['POID']?.toString() ?? '',
           'ipdNo': widget.patient['IPDNO']?.toString() ?? '',
-          'doa': _selectedDOA?.toIso8601String(),
-          'dod': _selectedDOD?.toIso8601String(),
+          'doa': _selectedDOA != null
+              ? '${_selectedDOA!.year}-${_selectedDOA!.month.toString().padLeft(2, '0')}-${_selectedDOA!.day.toString().padLeft(2, '0')}'
+              : null,
+          'dod': _selectedDOD != null
+              ? '${_selectedDOD!.year}-${_selectedDOD!.month.toString().padLeft(2, '0')}-${_selectedDOD!.day.toString().padLeft(2, '0')}'
+              : null,
           'daignosis': _diagnosisController.text,
           'his': _hisController.text,
           'investigation': _investigationController.text,
@@ -236,7 +274,7 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
         };
 
         final response = await ApiHelper.request(
-          'discharge-card/${widget.dischargeRecord['id']}', // Assuming there's an ID field
+          'discharge-card/${widget.dischargeRecord['DisOID']}', // Assuming there's an ID field
           method: 'PUT',
           body: data,
         );

@@ -330,7 +330,7 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                         if (confirm == true) {
                           try {
                             final response = await ApiHelper.request(
-                              'discharge-card/${dischargeRecord['disNO']?.toString()}',
+                              'discharge-card/${dischargeRecord['DisOID']?.toString()}',
                               method: 'DELETE',
                             );
                             if (response != null &&

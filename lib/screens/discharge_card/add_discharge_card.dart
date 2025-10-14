@@ -121,8 +121,12 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
           'name': widget.patient['Name']?.toString() ?? '',
           'poid': widget.patient['POID']?.toString() ?? '',
           'ipdNo': widget.patient['IPDNO']?.toString() ?? '',
-          'doa': _selectedDOA?.toIso8601String(),
-          'dod': _selectedDOD?.toIso8601String(),
+          'doa': _selectedDOA != null
+              ? '${_selectedDOA!.year}-${_selectedDOA!.month.toString().padLeft(2, '0')}-${_selectedDOA!.day.toString().padLeft(2, '0')}'
+              : null,
+          'dod': _selectedDOD != null
+              ? '${_selectedDOD!.year}-${_selectedDOD!.month.toString().padLeft(2, '0')}-${_selectedDOD!.day.toString().padLeft(2, '0')}'
+              : null,
           'daignosis': _diagnosisController.text,
           'his': _hisController.text,
           'investigation': _investigationController.text,
