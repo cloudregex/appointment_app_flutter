@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../helper/api_helper.dart';
+import '../utils/search_dropdown.dart';
 
 class AddDischargeCardScreen extends StatefulWidget {
   final Map<String, dynamic> patient;
@@ -33,6 +34,8 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
   final TextEditingController _drController = TextEditingController();
   final TextEditingController _otNoteController = TextEditingController();
   final TextEditingController _mlcNoController = TextEditingController();
+  String _inchargeDoctorName = '';
+  String _rmoDoctorName = '';
   final TextEditingController _dr1Controller = TextEditingController();
   final TextEditingController _dr2Controller = TextEditingController();
   final TextEditingController _pdController = TextEditingController();
@@ -143,8 +146,8 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
           'dr': _drController.text,
           'otNote': _otNoteController.text,
           'mlcNo': _mlcNoController.text,
-          'dr1': _dr1Controller.text,
-          'dr2': _dr2Controller.text,
+          'dr1': _inchargeDoctorName,
+          'dr2': _rmoDoctorName,
           'pd': _pdController.text,
           'temp': _tempController.text,
           'pr': _prController.text,
@@ -235,15 +238,32 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
                   labelText: 'Allergic To',
                   maxLines: 3,
                 ),
-
-                _buildTextFormField(
-                  controller: _dr1Controller,
-                  labelText: 'Incharge Dr',
+                SearchDropdown(
+                  apiUrl: "doctors-list",
+                  hintText: "Search Incharge Dr",
+                  displayKey: "Name",
+                  valueKey: "DrOID",
+                  onItemSelected: (doctor) {
+                    setState(() {
+                      _dr1Controller.text = doctor['DrOID'].toString();
+                      _inchargeDoctorName = doctor['Name']?.toString() ?? '';
+                    });
+                  },
                 ),
-                _buildTextFormField(
-                  controller: _dr2Controller,
-                  labelText: 'RMO Dr',
+                const SizedBox(height: 10),
+                SearchDropdown(
+                  apiUrl: "doctors-list",
+                  hintText: "Search RMO Dr",
+                  displayKey: "Name",
+                  valueKey: "DrOID",
+                  onItemSelected: (doctor) {
+                    setState(() {
+                      _dr2Controller.text = doctor['DrOID'].toString();
+                      _rmoDoctorName = doctor['Name']?.toString() ?? '';
+                    });
+                  },
                 ),
+                const SizedBox(height: 8),
                 _buildTextFormField(
                   controller: _pdController,
                   labelText: 'Provisional Diagnosis',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../helper/api_helper.dart';
+import '../utils/search_dropdown.dart';
 
 class EditDischargeCardScreen extends StatefulWidget {
   final Map<String, dynamic> patient;
@@ -39,6 +40,8 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
   final TextEditingController _drController = TextEditingController();
   final TextEditingController _otNoteController = TextEditingController();
   final TextEditingController _mlcNoController = TextEditingController();
+  String _inchargeDoctorName = '';
+  String _rmoDoctorName = '';
   final TextEditingController _dr1Controller = TextEditingController();
   final TextEditingController _dr2Controller = TextEditingController();
   final TextEditingController _pdController = TextEditingController();
@@ -91,6 +94,8 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
     _mlcNoController.text = widget.dischargeRecord['MLCNo']?.toString() ?? '';
     _dr1Controller.text = widget.dischargeRecord['Dr1']?.toString() ?? '';
     _dr2Controller.text = widget.dischargeRecord['Dr2']?.toString() ?? '';
+    _inchargeDoctorName = widget.dischargeRecord['dr1']?.toString() ?? '';
+    _rmoDoctorName = widget.dischargeRecord['dr2']?.toString() ?? '';
     _pdController.text = widget.dischargeRecord['PD']?.toString() ?? '';
     _tempController.text = widget.dischargeRecord['Temp']?.toString() ?? '';
     _prController.text = widget.dischargeRecord['PR']?.toString() ?? '';
@@ -256,8 +261,8 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
           'dr': _drController.text,
           'otNote': _otNoteController.text,
           'mlcNo': _mlcNoController.text,
-          'dr1': _dr1Controller.text,
-          'dr2': _dr2Controller.text,
+          'dr1': _inchargeDoctorName,
+          'dr2': _rmoDoctorName,
           'pd': _pdController.text,
           'temp': _tempController.text,
           'pr': _prController.text,
@@ -349,14 +354,32 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
                   maxLines: 3,
                 ),
 
-                _buildTextFormField(
-                  controller: _dr1Controller,
-                  labelText: 'Incharge Dr',
+                SearchDropdown(
+                  apiUrl: "doctors-list",
+                  hintText: "Search Incharge Dr",
+                  displayKey: "Name",
+                  valueKey: "DrOID",
+                  onItemSelected: (doctor) {
+                    setState(() {
+                      _dr1Controller.text = doctor['DrOID'].toString();
+                      _inchargeDoctorName = doctor['Name']?.toString() ?? '';
+                    });
+                  },
                 ),
-                _buildTextFormField(
-                  controller: _dr2Controller,
-                  labelText: 'RMO Dr',
+                const SizedBox(height: 10),
+                SearchDropdown(
+                  apiUrl: "doctors-list",
+                  hintText: "Search RMO Dr",
+                  displayKey: "Name",
+                  valueKey: "DrOID",
+                  onItemSelected: (doctor) {
+                    setState(() {
+                      _dr2Controller.text = doctor['DrOID'].toString();
+                      _rmoDoctorName = doctor['Name']?.toString() ?? '';
+                    });
+                  },
                 ),
+                const SizedBox(height: 8),
                 _buildTextFormField(
                   controller: _pdController,
                   labelText: 'Provisional Diagnosis',

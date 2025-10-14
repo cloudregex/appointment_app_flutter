@@ -276,6 +276,16 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                   'Date of Discharge',
                   _formatDate(dischargeRecord['DOD']),
                 ),
+                _buildDetailRow(
+                  Icons.person,
+                  'Incharge Dr',
+                  (dischargeRecord['Dr1'] ?? 'N/A').toString(),
+                ),
+                _buildDetailRow(
+                  Icons.person,
+                  'RMO Dr',
+                  (dischargeRecord['Dr2'] ?? 'N/A').toString(),
+                ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
