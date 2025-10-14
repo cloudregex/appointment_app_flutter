@@ -583,12 +583,26 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
                             child: Text(medicineEntry.dosageController.text),
                           ),
                         ),
-                        GestureDetector(
-                          onLongPress: () => _confirmDeleteMedicine(index),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(medicineEntry.durationController.text),
-                          ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  medicineEntry.durationController.text,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                                size: 20,
+                              ),
+                              onPressed: () => _confirmDeleteMedicine(index),
+                              tooltip: 'Delete medicine',
+                            ),
+                          ],
                         ),
                       ],
                     );
@@ -667,17 +681,44 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
+                      TypeAheadField<Map<String, dynamic>>(
                         controller: _tempDosageController,
-                        decoration: const InputDecoration(
-                          labelText: 'Dosage',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Dosage is required';
+                        builder: (context, controller, focusNode) {
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: const InputDecoration(
+                              labelText: 'Dosage',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Dosage is required';
+                              }
+                              return null;
+                            },
+                          );
+                        },
+                        suggestionsCallback: (pattern) async {
+                          final response = await ApiHelper.request(
+                            'content-list?search=$pattern',
+                            method: 'GET',
+                          );
+                          if (response != null && response is List) {
+                            return response.cast<Map<String, dynamic>>();
                           }
-                          return null;
+                          return [];
+                        },
+                        itemBuilder: (context, suggestion) {
+                          return ListTile(
+                            title: Text(suggestion['ContentName'] ?? ''),
+                          );
+                        },
+                        onSelected: (suggestion) {
+                          setStateDialog(() {
+                            _tempDosageController.text =
+                                suggestion['ContentName'] ?? '';
+                          });
                         },
                       ),
                       const SizedBox(height: 16),
