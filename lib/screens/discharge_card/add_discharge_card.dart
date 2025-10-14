@@ -117,6 +117,21 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
     }
   }
 
+  Future<void> _selectTime({required bool isT1}) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      if (isT1) {
+        _t1Controller.text = picked.format(context);
+      } else {
+        _t2Controller.text = picked.format(context);
+      }
+      setState(() {});
+    }
+  }
+
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       try {
@@ -214,18 +229,20 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
                   labelText: 'DOA',
                   onTap: () => _selectDate(isDOA: true),
                 ),
-                _buildTextFormField(
+                _buildTimeField(
                   controller: _t1Controller,
                   labelText: 'Time',
+                  onTap: () => _selectTime(isT1: true),
                 ),
                 _buildDateField(
                   controller: _dodController,
                   labelText: 'DOD',
                   onTap: () => _selectDate(isDOA: false),
                 ),
-                _buildTextFormField(
+                _buildTimeField(
                   controller: _t2Controller,
                   labelText: 'Time',
+                  onTap: () => _selectTime(isT1: false),
                 ),
 
                 _buildTextFormField(
@@ -240,7 +257,7 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
                 ),
                 SearchDropdown(
                   apiUrl: "doctors-list",
-                  hintText: "Search Incharge Dr",
+                  hintText: "Search Incharge Doctor",
                   displayKey: "Name",
                   valueKey: "DrOID",
                   onItemSelected: (doctor) {
@@ -253,7 +270,7 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
                 const SizedBox(height: 10),
                 SearchDropdown(
                   apiUrl: "doctors-list",
-                  hintText: "Search RMO Dr",
+                  hintText: "Search RMO Doctor",
                   displayKey: "Name",
                   valueKey: "DrOID",
                   onItemSelected: (doctor) {
@@ -263,7 +280,7 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
                     });
                   },
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 _buildTextFormField(
                   controller: _pdController,
                   labelText: 'Provisional Diagnosis',
@@ -323,10 +340,16 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
                   maxLines: 4,
                 ),
 
-                _buildTextFormField(
-                  controller: _drController,
-                  labelText: 'Diet Recommendation',
-                  maxLines: 3,
+                SearchDropdown(
+                  apiUrl: "doctors-list",
+                  hintText: "Search Diet Recommendation Doctor",
+                  displayKey: "Name",
+                  valueKey: "DrOID",
+                  onItemSelected: (doctor) {
+                    setState(() {
+                      _drController.text = doctor['Name']?.toString() ?? '';
+                    });
+                  },
                 ),
 
                 _buildTextFormField(
@@ -469,6 +492,34 @@ class _AddDischargeCardScreenState extends State<AddDischargeCardScreen> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           suffixIcon: IconButton(
             icon: const Icon(Icons.calendar_today),
+            onPressed: onTap,
+          ),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please select $labelText';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildTimeField({
+    required TextEditingController controller,
+    required String labelText,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextFormField(
+        controller: controller,
+        readOnly: true,
+        decoration: InputDecoration(
+          labelText: labelText,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.access_time),
             onPressed: onTap,
           ),
         ),

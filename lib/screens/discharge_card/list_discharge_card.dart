@@ -286,6 +286,11 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                   'RMO Dr',
                   (dischargeRecord['Dr2'] ?? 'N/A').toString(),
                 ),
+                _buildDetailRow(
+                  Icons.medical_services,
+                  'Diet Recommendation',
+                  (dischargeRecord['DR'] ?? 'N/A').toString(),
+                ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
