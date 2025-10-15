@@ -242,74 +242,73 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
   }
 
   Future<void> _updateForm() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        final data = {
-          'name': widget.patient['Name']?.toString() ?? '',
-          'poid': widget.patient['POID']?.toString() ?? '',
-          'ipdNo': widget.patient['IPDNO']?.toString() ?? '',
-          'doa': _selectedDOA != null
-              ? '${_selectedDOA!.year}-${_selectedDOA!.month.toString().padLeft(2, '0')}-${_selectedDOA!.day.toString().padLeft(2, '0')}'
-              : null,
-          'dod': _selectedDOD != null
-              ? '${_selectedDOD!.year}-${_selectedDOD!.month.toString().padLeft(2, '0')}-${_selectedDOD!.day.toString().padLeft(2, '0')}'
-              : null,
-          'daignosis': _diagnosisController.text,
-          'his': _hisController.text,
-          'investigation': _investigationController.text,
-          'advice': _adviceController.text,
-          'followup': _followupController.text,
-          't1': _t1Controller.text,
-          't2': _t2Controller.text,
-          'tg': _tgController.text,
-          'si': _siController.text,
-          'a': _aController.text,
-          'cc': _ccController.text,
-          'cith': _cithController.text,
-          'cod': _codController.text,
-          'dr': _drController.text,
-          'otNote': _otNoteController.text,
-          'mlcNo': _mlcNoController.text,
-          'dr1': _inchargeDoctorName,
-          'dr2': _rmoDoctorName,
-          'pd': _pdController.text,
-          'temp': _tempController.text,
-          'pr': _prController.text,
-          'rr': _rrController.text,
-          'bp': _bpController.text,
-          'pallor': _pallorController.text,
-          'cyn': _cynController.text,
-          'clu': _cluController.text,
-          'spo2': _spo2Controller.text,
-          'ict': _ictController.text,
-          'ade': _adeController.text,
-          'edema': _edemaController.text,
-          'cns': _cnsController.text,
-          'cvs': _cvsController.text,
-          'rs': _rsController.text,
-        };
+    // Removed validation - update directly
+    try {
+      final data = {
+        'name': widget.patient['Name']?.toString() ?? '',
+        'poid': widget.patient['POID']?.toString() ?? '',
+        'ipdNo': widget.patient['IPDNO']?.toString() ?? '',
+        'doa': _selectedDOA != null
+            ? '${_selectedDOA!.year}-${_selectedDOA!.month.toString().padLeft(2, '0')}-${_selectedDOA!.day.toString().padLeft(2, '0')}'
+            : null,
+        'dod': _selectedDOD != null
+            ? '${_selectedDOD!.year}-${_selectedDOD!.month.toString().padLeft(2, '0')}-${_selectedDOD!.day.toString().padLeft(2, '0')}'
+            : null,
+        'daignosis': _diagnosisController.text,
+        'his': _hisController.text,
+        'investigation': _investigationController.text,
+        'advice': _adviceController.text,
+        'followup': _followupController.text,
+        't1': _t1Controller.text,
+        't2': _t2Controller.text,
+        'tg': _tgController.text,
+        'si': _siController.text,
+        'a': _aController.text,
+        'cc': _ccController.text,
+        'cith': _cithController.text,
+        'cod': _codController.text,
+        'dr': _drController.text,
+        'otNote': _otNoteController.text,
+        'mlcNo': _mlcNoController.text,
+        'dr1': _inchargeDoctorName,
+        'dr2': _rmoDoctorName,
+        'pd': _pdController.text,
+        'temp': _tempController.text,
+        'pr': _prController.text,
+        'rr': _rrController.text,
+        'bp': _bpController.text,
+        'pallor': _pallorController.text,
+        'cyn': _cynController.text,
+        'clu': _cluController.text,
+        'spo2': _spo2Controller.text,
+        'ict': _ictController.text,
+        'ade': _adeController.text,
+        'edema': _edemaController.text,
+        'cns': _cnsController.text,
+        'cvs': _cvsController.text,
+        'rs': _rsController.text,
+      };
 
-        final response = await ApiHelper.request(
-          'discharge-card/${widget.dischargeRecord['DisOID']}',
-          method: 'PUT',
-          body: data,
-        );
+      final response = await ApiHelper.request(
+        'discharge-card/${widget.dischargeRecord['DisOID']}',
+        method: 'PUT',
+        body: data,
+      );
 
-        if (response != null && response['message'] != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(response['message'])));
-          Navigator.pop(context, true); // Return true to indicate success
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to update discharge card')),
-          );
-        }
-      } catch (e) {
+      if (response != null && response['message'] != null) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(SnackBar(content: Text(response['message'])));
+        Navigator.pop(context, true); // Return true to indicate success
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update discharge card')),
+        );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
@@ -450,18 +449,11 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
                   maxLines: 4,
                 ),
 
-                SearchDropdown(
-                  apiUrl: "doctors-list",
-                  hintText: "Search Diet Recommendation Doctor",
-                  displayKey: "Name",
-                  valueKey: "DrOID",
-                  onItemSelected: (doctor) {
-                    setState(() {
-                      _drController.text = doctor['Name']?.toString() ?? '';
-                    });
-                  },
+                _buildTextFormField(
+                  controller: _drController,
+                  labelText: 'Diet Recommendation',
+                  maxLines: 3,
                 ),
-
                 _buildTextFormField(
                   controller: _followupController,
                   labelText: 'Follow-up',
@@ -572,17 +564,6 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
           labelText: labelText,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        validator: (value) {
-          if (maxLines == 1 &&
-              labelText != 'IPD No' &&
-              labelText != 'Patient Name' &&
-              !readOnly) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter $labelText';
-            }
-          }
-          return null;
-        },
       ),
     );
   }
@@ -605,12 +586,6 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
             onPressed: onTap,
           ),
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please select $labelText';
-          }
-          return null;
-        },
       ),
     );
   }
@@ -633,12 +608,6 @@ class _EditDischargeCardScreenState extends State<EditDischargeCardScreen> {
             onPressed: onTap,
           ),
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please select $labelText';
-          }
-          return null;
-        },
       ),
     );
   }

@@ -78,9 +78,10 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                 ),
               );
               if (result == true) {
-                setState(() {
-                  _dischargeData = _fetchDischargeCards();
-                });
+                _dischargeData = _fetchDischargeCards();
+                if (mounted) {
+                  setState(() {});
+                }
               }
             },
           ),
@@ -106,11 +107,10 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      setState(() {
-                        _dischargeData = _fetchDischargeCards(
-                          page: _currentPage,
-                        );
-                      });
+                      _dischargeData = _fetchDischargeCards(page: _currentPage);
+                      if (mounted) {
+                        setState(() {});
+                      }
                     },
                     child: const Text('Retry'),
                   ),
@@ -145,9 +145,11 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
 
             return RefreshIndicator(
               onRefresh: () async {
-                setState(() {
-                  _dischargeData = _fetchDischargeCards(page: _currentPage);
-                });
+                _dischargeData = _fetchDischargeCards(page: _currentPage);
+                if (mounted) {
+                  setState(() {});
+                }
+                return;
               },
               child: Column(
                 children: [
@@ -170,12 +172,13 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                           ElevatedButton(
                             onPressed: currentPage > 1
                                 ? () {
-                                    setState(() {
-                                      _currentPage = currentPage - 1;
-                                      _dischargeData = _fetchDischargeCards(
-                                        page: _currentPage,
-                                      );
-                                    });
+                                    _currentPage = currentPage - 1;
+                                    _dischargeData = _fetchDischargeCards(
+                                      page: _currentPage,
+                                    );
+                                    if (mounted) {
+                                      setState(() {});
+                                    }
                                   }
                                 : null,
                             child: const Text('Previous'),
@@ -184,12 +187,13 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                           ElevatedButton(
                             onPressed: currentPage < lastPage
                                 ? () {
-                                    setState(() {
-                                      _currentPage = currentPage + 1;
-                                      _dischargeData = _fetchDischargeCards(
-                                        page: _currentPage,
-                                      );
-                                    });
+                                    _currentPage = currentPage + 1;
+                                    _dischargeData = _fetchDischargeCards(
+                                      page: _currentPage,
+                                    );
+                                    if (mounted) {
+                                      setState(() {});
+                                    }
                                   }
                                 : null,
                             child: const Text('Next'),
@@ -229,9 +233,10 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
               ),
             );
             if (result == true) {
-              setState(() {
-                _dischargeData = _fetchDischargeCards();
-              });
+              _dischargeData = _fetchDischargeCards();
+              if (mounted) {
+                setState(() {});
+              }
             }
           },
           child: Padding(
@@ -308,9 +313,10 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                           ),
                         );
                         if (result == true) {
-                          setState(() {
-                            _dischargeData = _fetchDischargeCards();
-                          });
+                          _dischargeData = _fetchDischargeCards();
+                          if (mounted) {
+                            setState(() {});
+                          }
                         }
                       },
                     ),
@@ -347,9 +353,8 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                               'discharge-card/${dischargeRecord['DisOID']?.toString() ?? ''}',
                               method: 'DELETE',
                             );
-                            if (response != null &&
-                                response['message'] ==
-                                    'Discharge record deleted') {
+                            print(response);
+                            if (response != null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
@@ -357,9 +362,15 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                                   ),
                                 ),
                               );
+                              // Refresh the data to remove the deleted record
                               setState(() {
-                                _dischargeData = _fetchDischargeCards();
+                                _dischargeData = _fetchDischargeCards(
+                                  page: _currentPage,
+                                );
                               });
+                              if (mounted) {
+                                setState(() {});
+                              }
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
