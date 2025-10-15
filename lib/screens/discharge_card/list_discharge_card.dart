@@ -353,7 +353,6 @@ class _DischargeCardListScreenState extends State<DischargeCardListScreen> {
                               'discharge-card/${dischargeRecord['DisOID']?.toString() ?? ''}',
                               method: 'DELETE',
                             );
-                            print(response);
                             if (response != null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
