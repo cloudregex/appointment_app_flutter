@@ -96,7 +96,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
             'POID': widget.appointmentData?['POID'],
             'History': _historyController.text,
             'ItemName': entry.medicineNameController.text,
-            'Notes': entry.dosageController.text,
+            'Notes': _diagnosisController.text,
             'Advice': _adviceController.text,
             'ApDate': _apDateController.text.isEmpty
                 ? _dateController.text
@@ -105,7 +105,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
             'cf': _clinicalFindingController.text,
             'ge': _generalExaminationController.text,
             'inv': _invController.text,
-            'Diagnosis': _diagnosisController.text,
             'Name': widget.appointmentData?['Name'] ?? 'N/A',
             'medicineId': entry.medicineId,
             'ContentName': entry.dosageController.text,

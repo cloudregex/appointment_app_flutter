@@ -159,8 +159,7 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
             'ItemName': entry.medicineNameController.text,
             'ContentName': entry.dosageController.text,
             'Total': entry.durationController.text,
-            'Notes': _contentNameController
-                .text, // Set Notes to null for medicine entries
+            'Notes': _diagnosisController.text,
             'Advice': _adviceController.text,
             'ApDate': _apDateController.text.isEmpty
                 ? _dateController.text
@@ -191,7 +190,7 @@ class _EditPrescriptionScreenState extends State<EditPrescriptionScreen> {
           'cf': _clinicalFindingController.text,
           'ge': _generalExaminationController.text,
           'inv': _invController.text,
-          'Diagnosis': _diagnosisController.text,
+          'Notes': _diagnosisController.text,
           'Name': widget.appointmentData?['Name'] ?? 'N/A',
         });
       }
